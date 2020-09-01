@@ -28,7 +28,7 @@
 #include <JsonListener.h>
 
 #include "AccuWeatherLibrary.h"
-#include "authentication.h"
+#include "kaloszek_config.h"
 #include "MAX17048.h"
 
 //===========================================================================================================================================
