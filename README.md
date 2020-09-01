@@ -79,7 +79,7 @@ http://www.instagram.com/creatorepic/
 
 <H2> Settings</H2>
 
-You have to edit „authentication.h” file and set your own WiFi SSID, password and accuweather keys. 
+You have to rename „kaloszek_config_example.h” to „kaloszek_config.h”. Next you need to set your own WiFi SSID, password and accuweather keys. 
 
 <H2> 
 </H2>
