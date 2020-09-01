@@ -86,7 +86,6 @@ MAX17048 pwr_mgmt;
 
 const uint16_t pos_x_big_ico = 260;
 
-const int ACU_MAX_KEYS = 4;
 int acu_key = 0;
 
 Accuweather aw(acu_keys[0], 274663, "en-en", true);
