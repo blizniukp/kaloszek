@@ -10,7 +10,7 @@
 
 //*********************************************************
 //    LIBRARIES:
-//    
+//
 //    EPD: https://github.com/ZinggJM/GxEPD2
 //    ACCUWEATHER: https://github.com/jackmax/AccuWeatherLibrary
 //    JSON ACCU: https://github.com/squix78/json-streaming-parser
@@ -48,10 +48,10 @@
 #define     UPDATE_PERIOD           1800                    //seconds
 #define     WIFI_ERR_PERIOD         300                     //seconds
 
-//=========================================================================================================================================== 
+//===========================================================================================================================================
 #include "epd_winddir.h"
 #include "epd_iconpack.h"
-#include "epd_main_iconpack.h" 
+#include "epd_main_iconpack.h"
 #include "epd_info_iconpack.h"
 
 #include "data/fonts/RobotoMedPlain17.h"
@@ -61,7 +61,7 @@
 #include "data/fonts/FreeSansBold52_mod.h"
 
 //===========================================================================================================================================
-GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D3 ss*/ 0 , /*DC=D8*/ 15, /*RST=D4*/ 2, /*BUSY=D2*/ 4));    
+GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D3 ss*/ 0 , /*DC=D8*/ 15, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 
 const char str_sleep[] = "I'm going to sleep for ";
 const char str_seconds[] = "seconds";
@@ -95,62 +95,62 @@ Accuweather aw(acu_keys[0], 274663, "en-en", true);
 //===========================================================================================================================================
 void setup()
 {
-//---------------------------------------------------------------------------- SERIAL
+  //---------------------------------------------------------------------------- SERIAL
 #ifdef USE_UART
   Serial.begin(115200);
   Serial.println();
   Serial.println("Setup");
 #endif
   delay(100);
-  
-//---------------------------------------------------------------------------- EPD
+
+  //---------------------------------------------------------------------------- EPD
 #ifdef USE_EPD
   display.init(115200);
 #endif
 
-//---------------------------------------------------------------------------- WIFI
+  //---------------------------------------------------------------------------- WIFI
 #ifdef USE_WIFI
   wifi_connection_status = wifi_connect();
   int timeStart = millis();
 #endif
 
-//---------------------------------------------------------------------------- BATTERY
+  //---------------------------------------------------------------------------- BATTERY
 #ifdef USE_MAX17048
-  Wire.begin(D1,D6);                          //sda,scl
+  Wire.begin(D1, D6);                         //sda,scl
   pwr_mgmt.attatch(Wire);
 
-  #ifdef USE_UART
-    //Serial.print("VCELL ADC : ");
-    //Serial.println(pwr_mgmt.adc());
-    Serial.print("VCELL V   : ");
-    Serial.println(pwr_mgmt.voltage());
-    Serial.print("VCELL SOC : ");
-    Serial.print(pwr_mgmt.percent());
-    Serial.println(" \%");
-    //Serial.print("VCELL SOC : ");
-    //Serial.print(pwr_mgmt.accuratePercent());
-    //Serial.println(" \%");
-    Serial.println();
-  #endif
- 
+#ifdef USE_UART
+  //Serial.print("VCELL ADC : ");
+  //Serial.println(pwr_mgmt.adc());
+  Serial.print("VCELL V   : ");
+  Serial.println(pwr_mgmt.voltage());
+  Serial.print("VCELL SOC : ");
+  Serial.print(pwr_mgmt.percent());
+  Serial.println(" \%");
+  //Serial.print("VCELL SOC : ");
+  //Serial.print(pwr_mgmt.accuratePercent());
+  //Serial.println(" \%");
+  Serial.println();
 #endif
 
-//---------------------------------------------------------------------------- ACCUWEATHER
+#endif
+
+  //---------------------------------------------------------------------------- ACCUWEATHER
   if (wifi_connection_status == 0)
   {
     do {
       weather_status = get_weather();
-      #ifdef USE_UART
-        Serial.print("Accu status:");
-        Serial.println(weather_status);
-      #endif
+#ifdef USE_UART
+      Serial.print("Accu status:");
+      Serial.println(weather_status);
+#endif
 
       hourly_status = get_hourly_forcast();
-      #ifdef USE_UART
-        Serial.print("Hourly status:");
-        Serial.println(hourly_status);
-      #endif
-      
+#ifdef USE_UART
+      Serial.print("Hourly status:");
+      Serial.println(hourly_status);
+#endif
+
       if ((weather_status == 0) && (hourly_status == 0)) break;
 
       acu_key++;
@@ -160,14 +160,14 @@ void setup()
 
     } while ((weather_status != 0) || (hourly_status != 0));
   }
-  
 
-//---------------------------------------------------------------------------- DISPLAY DATA
+
+  //---------------------------------------------------------------------------- DISPLAY DATA
 #ifdef USE_EPD
   display_weather(wifi_connection_status, weather_status, hourly_status);
 #endif
 
-//---------------------------------------------------------------------------- GO TO SLEEP
+  //---------------------------------------------------------------------------- GO TO SLEEP
   if (wifi_connection_status == 0)
   {
     go_to_sleep(UPDATE_PERIOD);
@@ -189,13 +189,13 @@ void loop()
 //===========================================================================================================================================
 int wifi_connect()
 {
-//---------------------------------------------------------------------------- WIFI 1
+  //---------------------------------------------------------------------------- WIFI 1
   int i = 50;
 
-  #ifdef USE_UART
-    Serial.print("Connecting to: ");
-    Serial.println(ssid_1);
-  #endif 
+#ifdef USE_UART
+  Serial.print("Connecting to: ");
+  Serial.println(ssid_1);
+#endif
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid_1, password_1);
@@ -204,57 +204,57 @@ int wifi_connect()
   {
     if (WiFi.status() == WL_CONNECTED) break;
     delay(500);
-    #ifdef USE_UART
-      Serial.println("Connecting to WiFi..");
-    #endif  
+#ifdef USE_UART
+    Serial.println("Connecting to WiFi..");
+#endif
   } while (--i);
 
-  if(i)
+  if (i)
   {
-    #ifdef USE_UART
-      Serial.println("Connected to the WiFi network :)");
-      Serial.print("IP address: ");
-      Serial.println(WiFi.localIP()); 
-    #endif
+#ifdef USE_UART
+    Serial.println("Connected to the WiFi network :)");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+#endif
     return 0;
   }
-//---------------------------------------------------------------------------- WIFI 2 (alternative)
-    i = 50;
-  
-    #ifdef USE_UART
-      Serial.print("Connecting to: ");
-      Serial.println(ssid_2);
-    #endif 
-  
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid_2, password_2);
-  
-    do
-    {
-      if (WiFi.status() == WL_CONNECTED) break;
-      delay(500);
-      #ifdef USE_UART
-        Serial.println("Connecting to WiFi..");
-      #endif  
-    } while (--i);
-  
-    if(i)
-    {
-      #ifdef USE_UART
-        Serial.println("Connected to the WiFi network :)");
-        Serial.print("IP address: ");
-        Serial.println(WiFi.localIP()); 
-      #endif
-      return 0;
-    }
-    else
-    {
-      #ifdef USE_UART
-        Serial.println("WiFi error");
-      #endif
-        
-      return -1;
-    }
+  //---------------------------------------------------------------------------- WIFI 2 (alternative)
+  i = 50;
+
+#ifdef USE_UART
+  Serial.print("Connecting to: ");
+  Serial.println(ssid_2);
+#endif
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid_2, password_2);
+
+  do
+  {
+    if (WiFi.status() == WL_CONNECTED) break;
+    delay(500);
+#ifdef USE_UART
+    Serial.println("Connecting to WiFi..");
+#endif
+  } while (--i);
+
+  if (i)
+  {
+#ifdef USE_UART
+    Serial.println("Connected to the WiFi network :)");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+#endif
+    return 0;
+  }
+  else
+  {
+#ifdef USE_UART
+    Serial.println("WiFi error");
+#endif
+
+    return -1;
+  }
 }
 
 //===========================================================================================================================================
@@ -267,10 +267,10 @@ int get_weather()
 
   if (ret != 0)
   {
-    #ifdef USE_UART
-      Serial.print("ACCUWEATHER ERROR: ");
-      Serial.println(ret);
-     #endif
+#ifdef USE_UART
+    Serial.print("ACCUWEATHER ERROR: ");
+    Serial.println(ret);
+#endif
 
     return ret;
   }
@@ -279,17 +279,17 @@ int get_weather()
   {
   }
 
-  #ifdef PRINT_WEATHER
-    print_actual_weather();
-  #endif
+#ifdef PRINT_WEATHER
+  print_actual_weather();
+#endif
 
   timeStart = millis() - timeStart;
 
-  #ifdef USE_UART
-    Serial.printf("Downloaded and parsed in %d ms\n", timeStart);
-    Serial.println(String(ESP.getFreeHeap()));
-  #endif  
-  
+#ifdef USE_UART
+  Serial.printf("Downloaded and parsed in %d ms\n", timeStart);
+  Serial.println(String(ESP.getFreeHeap()));
+#endif
+
   return 0;
 #else                                                                 //fake data - epd test
   dataC.WeatherText = "Mostly cloudy";
@@ -315,11 +315,11 @@ int get_hourly_forcast()
 
   if (ret != 0)
   {
-    #ifdef USE_UART
-      Serial.print("ACCUWEATHER ERROR: ");
-      Serial.println(ret);
-    #endif
-    
+#ifdef USE_UART
+    Serial.print("ACCUWEATHER ERROR: ");
+    Serial.println(ret);
+#endif
+
     return ret;
   }
 
@@ -367,39 +367,39 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
 
   int pos_x_wind;
   int pos_x_wind_ico;
-  
+
   int pos_x_prob;
   int pos_x_prob_ico;
-  
+
   display.fillScreen(GxEPD_WHITE);
   display.setRotation(0);
   display.setTextColor(GxEPD_BLACK);
-  
-//----------------------------------------------------------------------------- background
+
+  //----------------------------------------------------------------------------- background
   display.fillRect(1, 160, 399, 2, GxEPD_BLACK);
   display.fillRect(1, 276, 399, 2, GxEPD_BLACK);
-  
-//----------------------------------------------------------------------------- 1. line
+
+  //----------------------------------------------------------------------------- 1. line
   if (w_status == 0)
   {
     display.setFont(&Open_Sans_Bold_52);
 
     my_temp = round(dataC.Temperature * 10) / 10.0;
     display.setCursor(25, pos_y_1_line);
-    display.print(my_temp,1);
+    display.print(my_temp, 1);
     display.print(str_st1_c);
 
-//----------------------------------------------------------------------------- 2. line    
+    //----------------------------------------------------------------------------- 2. line
 
-//----------------------------------------------------- real_temp
-    display.setFont(&Roboto_Medium_25);                                                    
+    //----------------------------------------------------- real_temp
+    display.setFont(&Roboto_Medium_25);
     display.setCursor(10, pos_y_2_line);
-   
+
     int real_temp = (int)(round(dataC.RealFeelTemperature));
     display.print(real_temp);
     display.print(str_st1_c);
 
-//----------------------------------------------------- humidity
+    //----------------------------------------------------- humidity
     int humidity = int(round(dataC.RelativeHumidity));
 
     display.drawBitmap(90, pos_y_2_line - 25, hum_ico, 32, 32, GxEPD_BLACK);          //wypozycjonowac
@@ -407,29 +407,29 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     display.print(humidity);
     display.print(str_percent);
 
-//----------------------------------------------------- uv
+    //----------------------------------------------------- uv
     //int uv_index = (int)(round(dataC.UVIndex));
     //display.print(str_uvindex);
     //display.print(uv_index);
 
-//----------------------------------------------------------------------------- 3. line
+    //----------------------------------------------------------------------------- 3. line
 
-//----------------------------------------------------- pressure     
+    //----------------------------------------------------- pressure
     int pressure = int(round(dataC.Pressure));
-    
+
     display.setCursor(10, pos_y_3_line);
     display.print(pressure);
     display.print(str_hpa);
-    
-//----------------------------------------------------- wind 
-    int wind_speed = (int)(round(dataC.WindSpeed));   
 
-    if(wind_speed<10)                                                               //ok
+    //----------------------------------------------------- wind
+    int wind_speed = (int)(round(dataC.WindSpeed));
+
+    if (wind_speed < 10)                                                            //ok
     {
       pos_x_wind = 160;
       pos_x_wind_ico = 235;
     }
-      else if((wind_speed>9)&&(wind_speed<100))                                     //ok
+    else if ((wind_speed > 9) && (wind_speed < 100))                              //ok
     {
       pos_x_wind = 150;
       pos_x_wind_ico = 235;
@@ -439,22 +439,22 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
       pos_x_wind = 145;
       pos_x_wind_ico = 245;
     }
-    
+
     display.setCursor(pos_x_wind, pos_y_3_line);
     display.print(wind_speed);
     display.print(str_kmh);
 
     display_wind_dir(dataC.WindDirection, pos_x_wind_ico, pos_y_3_line - 33);       //ok
 
-//----------------------------------------------------- probability
-    int prob = (dataH[1].RainProbability);   
-  
-    if(prob<10)                                                                     //ok
+    //----------------------------------------------------- probability
+    int prob = (dataH[1].RainProbability);
+
+    if (prob < 10)                                                                  //ok
     {
       pos_x_prob_ico = 320;
       pos_x_prob = 357;
     }
-      else if((prob>9)&&(prob<100))                                                 //ok
+    else if ((prob > 9) && (prob < 100))                                          //ok
     {
       pos_x_prob_ico = 307;
       pos_x_prob = 345;
@@ -470,49 +470,49 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     display.print(prob);
     display.print('%');
 
-//----------------------------------------------------------------------------- main icon and weather description
+    //----------------------------------------------------------------------------- main icon and weather description
     display_main_weather_icon(dataC.WeatherIcon, pos_x_big_ico, 4);
-    
-    uint16_t pos_x_description = set_weather_description_offset(dataC.WeatherText);
-    
-    display.setFont(&Roboto_Medium_18);                                
-    display.setCursor(pos_x_description, pos_y_w_line);
-    display.print(dataC.WeatherText);                                                                           
 
-//----------------------------------------------------------------------------- 5. line - update time
+    uint16_t pos_x_description = set_weather_description_offset(dataC.WeatherText);
+
+    display.setFont(&Roboto_Medium_18);
+    display.setCursor(pos_x_description, pos_y_w_line);
+    display.print(dataC.WeatherText);
+
+    //----------------------------------------------------------------------------- 5. line - update time
     dataC.LocalObservationDateTime.toCharArray(new_date, 20);
     memmove(new_date, new_date + 11, 8);
     memcpy(new_data, new_date, 5);
     new_data[5] = 0;
     display.setCursor(335, pos_y_6_line);
-    display.setFont(&Roboto_Medium_17);    
+    display.setFont(&Roboto_Medium_17);
     display.print(new_data);
   }
   else
-//----------------------------------------------------------------------------- accuweather error
+    //----------------------------------------------------------------------------- accuweather error
   {
-    display.setFont(&Roboto_Medium_17);    
+    display.setFont(&Roboto_Medium_17);
     display.setCursor(232, pos_y_6_line);
     display.print(str_accuweather_err);
   }
-  
-//----------------------------------------------------------------------------- wifi
-  display.setFont(&Roboto_Medium_17);   
+
+  //----------------------------------------------------------------------------- wifi
+  display.setFont(&Roboto_Medium_17);
   display.setCursor(30, pos_y_6_line);
 
 #ifdef USE_WIFI_ICO
-  display.drawBitmap(6, 281, wifi_ico, 24, 16, GxEPD_BLACK); 
+  display.drawBitmap(6, 281, wifi_ico, 24, 16, GxEPD_BLACK);
 #endif
 
   if (wifi_connection_status == 0)
   {
-     #ifndef USE_WIFI_ICO
-      display.print(WiFi.SSID());
-      display.print(' ');
-    #endif  
-    
+#ifndef USE_WIFI_ICO
+    display.print(WiFi.SSID());
+    display.print(' ');
+#endif
+
     display.print(WiFi.RSSI());
-    
+
     display.print(str_db);
   }
   else
@@ -520,11 +520,11 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     display.print(str_wifi_err);
   }
 
-//----------------------------------------------------------------------------- battery
-  display_battery(pos_y_6_line); 
+  //----------------------------------------------------------------------------- battery
+  display_battery(pos_y_6_line);
 
-//----------------------------------------------------------------------------- weather forcast
-  if (h_status == 0) 
+  //----------------------------------------------------------------------------- weather forcast
+  if (h_status == 0)
   {
     display_forcast(2, pos_y_4_line, pos_y_5_line);         //3h
     display_forcast(5, pos_y_4_line, pos_y_5_line);         //6h
@@ -548,31 +548,31 @@ void display_forcast(int idx, int pos_y_temp, int pos_y_time)
   int pos_x_time;
   int pos_x_temp;
 
-//-------------------------------------------------- temp & ico
-  int my_t = (int)(round(my_temp));  
+  //-------------------------------------------------- temp & ico
+  int my_t = (int)(round(my_temp));
 
-  switch(idx)
+  switch (idx)
   {
     case 2: pos_x_ico = 22; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-    case 5: pos_x_ico = 122; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t);  break;        
-    case 8: pos_x_ico = 222; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;        
+    case 5: pos_x_ico = 122; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t);  break;
+    case 8: pos_x_ico = 222; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
     case 11: pos_x_ico = 322; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
   }
-  
+
   display_hourly_weather_icon(dataH[idx].WeatherIcon, pos_x_ico, pos_y_temp - 80);
 
-  display.setFont(&Roboto_Black_25); 
+  display.setFont(&Roboto_Black_25);
   display.setCursor(pos_x_temp, pos_y_temp);
   display.print(my_t);
   display.print(str_st1_c);
 
-//-------------------------------------------------- time
+  //-------------------------------------------------- time
   dataH[idx].DateTime.toCharArray(new_date, 20);
   memmove(new_date, new_date + 11, 8);
   memcpy(new_data, new_date, 5);
   new_data[5] = 0;
 
-  display.setFont(&Roboto_Medium_18);                                            
+  display.setFont(&Roboto_Medium_18);
   display.setCursor(pos_x_time, pos_y_time);
   display.print(new_data);
 }
@@ -580,36 +580,36 @@ void display_forcast(int idx, int pos_y_temp, int pos_y_time)
 //===========================================================================================================================================
 uint16_t set_weather_description_offset(String str)
 {
-  int16_t tbx, tby; 
+  int16_t tbx, tby;
   uint16_t tbw, tbh;
 
-  display.setFont(&Roboto_Medium_18);                                
+  display.setFont(&Roboto_Medium_18);
   display.getTextBounds(str.c_str(), 0, 0, &tbx, &tby, &tbw, &tbh);
 
-  uint16_t x_center = pos_x_big_ico + (90/2);               //srodek ikonki pogody 90 - uwzglednic wielkosc ikonki w obliczeniach
+  uint16_t x_center = pos_x_big_ico + (90 / 2);             //srodek ikonki pogody 90 - uwzglednic wielkosc ikonki w obliczeniach
   uint16_t  pos_x_napisu = (x_center - (tbw / 2)) - tbx;
- 
+
   return pos_x_napisu;
 }
 
 //===========================================================================================================================================
 int set_forcast_temperature_position(int pos_x, int temp)
 {
-  if(temp<-9)                               
+  if (temp < -9)
   {
-    return pos_x-8;
+    return pos_x - 8;
   }
-  else if((temp>-10)&&(temp<0))             
+  else if ((temp > -10) && (temp < 0))
   {
-    return pos_x-2;
+    return pos_x - 2;
   }
-  else if((temp>-1)&&(temp<10))            
+  else if ((temp > -1) && (temp < 10))
   {
-     return pos_x+4;
+    return pos_x + 4;
   }
-  else                                    
+  else
   {
-    return pos_x-2;
+    return pos_x - 2;
   }
 }
 
@@ -635,7 +635,7 @@ void display_hourly_weather_icon(uint8_t w_number, int x_pos, int y_pos)
   int size_h = 55;
 
   set_icon_offset(w_number, &x_pos, &y_pos);
-  
+
   switch (w_number)
   {
     case 1: display.drawBitmap(x_pos, y_pos, weatherIco1, size_w, size_h, GxEPD_BLACK); break;
@@ -691,7 +691,7 @@ void display_main_weather_icon(uint8_t w_number, int x_pos, int y_pos)
   int size_h = 90;
 
   set_icon_offset(w_number, &x_pos, &y_pos);
-  
+
   switch (w_number)
   {
     case 1: display.drawBitmap(x_pos, y_pos, bigWeatherIco1, size_w, size_h, GxEPD_BLACK); break;
@@ -790,53 +790,53 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos)
 }
 
 //===========================================================================================================================================
-void display_battery(uint16_t pos_y) 
+void display_battery(uint16_t pos_y)
 {
-  display.setFont(&Roboto_Medium_17);   
+  display.setFont(&Roboto_Medium_17);
   display.setCursor(130, pos_y);
 
   uint16_t percent = pwr_mgmt.percent();
-  
-  if((percent>100)&&(percent<250)) percent = 100;
-  
+
+  if ((percent > 100) && (percent < 250)) percent = 100;
+
   int pos_x_ico = 100;
 
-  if(percent>100)
+  if (percent > 100)
   {
     display.drawBitmap(50, 281, bat_empty, 24, 16, GxEPD_BLACK);
     display.print(str_bat_error);
   }
-  else if((percent>85)&&(percent<101))
+  else if ((percent > 85) && (percent < 101))
   {
     display.drawBitmap(pos_x_ico, 281, bat_100, 24, 16, GxEPD_BLACK);
     display.print(percent);
     display.print("% ");
   }
-  else if((percent>60)&&(percent<86))
+  else if ((percent > 60) && (percent < 86))
   {
     display.drawBitmap(pos_x_ico, 281, bat_75, 24, 16, GxEPD_BLACK);
     display.print(percent);
     display.print("% ");
   }
-  else if((percent>40)&&(percent<61))
+  else if ((percent > 40) && (percent < 61))
   {
     display.drawBitmap(pos_x_ico, 281, bat_50, 24, 16, GxEPD_BLACK);
     display.print(percent);
     display.print("% ");
   }
-  else if((percent>10)&&(percent<41))
+  else if ((percent > 10) && (percent < 41))
   {
     display.drawBitmap(pos_x_ico, 281, bat_25, 24, 16, GxEPD_BLACK);
     display.print(percent);
     display.print("% ");
   }
-  else if(percent<11)
+  else if (percent < 11)
   {
     display.drawBitmap(pos_x_ico, 281, bat_empty, 24, 16, GxEPD_BLACK);
     display.print(percent);
     display.print("% ");
   }
- 
+
 }
 
 //===========================================================================================================================================
@@ -912,14 +912,14 @@ void print_dataH()
 }
 
 //===========================================================================================================================================
-void draw_margin(String text, int data_len) 
+void draw_margin(String text, int data_len)
 {
   int margin_size = data_len - text.length();
   while (margin_size > 0)
   {
     display.print("  ");
     margin_size--;
- }
+  }
 }
 
 //===========================================================================================================================================
