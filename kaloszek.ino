@@ -698,8 +698,8 @@ void display_hourly_weather_icon(uint8_t w_number, int x_pos, int y_pos)
 //===========================================================================================================================================
 void display_main_weather_icon(uint8_t w_number, int x_pos, int y_pos)
 {
-  int size_w = 90;
-  int size_h = 90;
+  int size_w = 100;
+  int size_h = 100;
 
   set_icon_offset(w_number, &x_pos, &y_pos);
 
