@@ -54,11 +54,11 @@
 #include "epd_main_iconpack.h"
 #include "epd_info_iconpack.h"
 
-#include "data/fonts/RobotoMedPlain17.h"
+#include "data/fonts/OpenSansBold26ptExt.h"
+#include "data/fonts/OpenSansBold56ptExt.h"
+#include <Fonts/FreeSansBold12pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
 #include "data/fonts/RobotoMedPlain18.h"
-#include "data/fonts/RobotoMedPlain25_mod.h"
-#include "data/fonts/RobotoBlackPlain25_mod.h"
-#include "data/fonts/FreeSansBold52_mod.h"
 
 //===========================================================================================================================================
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D3 ss*/ 0 , /*DC=D8*/ 15, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
@@ -382,7 +382,7 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
   //----------------------------------------------------------------------------- 1. line
   if (w_status == 0)
   {
-    display.setFont(&Open_Sans_Bold_52);
+    display.setFont(&Open_Sans_Bold_56pt_Ext);
 
     my_temp = round(dataC.Temperature * 10) / 10.0;
     display.setCursor(25, pos_y_1_line);
@@ -392,7 +392,7 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     //----------------------------------------------------------------------------- 2. line
 
     //----------------------------------------------------- real_temp
-    display.setFont(&Roboto_Medium_25);
+    display.setFont(&Open_Sans_Bold_26pt_Ext);
     display.setCursor(10, pos_y_2_line);
 
     int real_temp = (int)(round(dataC.RealFeelTemperature));
@@ -485,19 +485,19 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     memcpy(new_data, new_date, 5);
     new_data[5] = 0;
     display.setCursor(335, pos_y_6_line);
-    display.setFont(&Roboto_Medium_17);
+    display.setFont(&FreeSansBold9pt7b);
     display.print(new_data);
   }
   else
     //----------------------------------------------------------------------------- accuweather error
   {
-    display.setFont(&Roboto_Medium_17);
+    display.setFont(&FreeSansBold9pt7b);
     display.setCursor(232, pos_y_6_line);
     display.print(str_accuweather_err);
   }
 
   //----------------------------------------------------------------------------- wifi
-  display.setFont(&Roboto_Medium_17);
+  display.setFont(&FreeSansBold9pt7b);
   display.setCursor(30, pos_y_6_line);
 
 #ifdef USE_WIFI_ICO
@@ -561,7 +561,7 @@ void display_forcast(int idx, int pos_y_temp, int pos_y_time)
 
   display_hourly_weather_icon(dataH[idx].WeatherIcon, pos_x_ico, pos_y_temp - 80);
 
-  display.setFont(&Roboto_Black_25);
+  display.setFont(&Open_Sans_Bold_26pt_Ext);
   display.setCursor(pos_x_temp, pos_y_temp);
   display.print(my_t);
   display.print(str_st1_c);
@@ -792,7 +792,7 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos)
 //===========================================================================================================================================
 void display_battery(uint16_t pos_y)
 {
-  display.setFont(&Roboto_Medium_17);
+  display.setFont(&FreeSansBold9pt7b);
   display.setCursor(130, pos_y);
 
   uint16_t percent = pwr_mgmt.percent();
