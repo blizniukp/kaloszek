@@ -155,7 +155,9 @@ void setup()
 
       acu_key++;
       if (acu_key >= ACU_MAX_KEYS) break;
+#ifdef USE_UART
       Serial.println("Change Accuweather api key");
+#endif
       aw.changeApiKey(acu_keys[acu_key]);
 
     } while ((weather_status != 0) || (hourly_status != 0));
@@ -176,12 +178,14 @@ void setup()
   {
     go_to_sleep(WIFI_ERR_PERIOD);
   }
+
 }
 //===========================================================================================================================================
 //===========================================================================================================================================
 //===========================================================================================================================================
 void loop()
 {
+
 }
 
 //===========================================================================================================================================
@@ -197,6 +201,9 @@ int wifi_connect()
   Serial.println(ssid_1);
 #endif
 
+  WiFi.forceSleepWake();
+  delay( 1 );
+  WiFi.persistent( false );
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid_1, password_1);
 
@@ -331,8 +338,10 @@ int get_hourly_forcast()
 
   timeStart = millis() - timeStart;
 
+#ifdef USE_UART
   Serial.printf("Downloaded and parsed forcast in %d ms\n", timeStart);
   Serial.println(String(ESP.getFreeHeap()));
+#endif
 #else
   dataH[2].Temperature = -1.20;
   dataH[5].Temperature = 4.40;
@@ -480,12 +489,12 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     display.print(dataC.WeatherText);
 
     //----------------------------------------------------------------------------- 5. line - update time
+    display.setFont(&FreeSansBold9pt7b);
     dataC.LocalObservationDateTime.toCharArray(new_date, 20);
     memmove(new_date, new_date + 11, 8);
     memcpy(new_data, new_date, 5);
     new_data[5] = 0;
     display.setCursor(335, pos_y_6_line);
-    display.setFont(&FreeSansBold9pt7b);
     display.print(new_data);
   }
   else
@@ -535,7 +544,9 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
   display.display();
   display.powerOff();
   display.hibernate();
+#ifdef USE_UART
   Serial.println("EPD is sleeping");
+#endif
 }
 
 //===========================================================================================================================================
@@ -631,8 +642,8 @@ void set_icon_offset(uint8_t w_number, int *x_pos, int *y_pos) {
 //===========================================================================================================================================
 void display_hourly_weather_icon(uint8_t w_number, int x_pos, int y_pos)
 {
-  int size_w = 55;
-  int size_h = 55;
+  int size_w = 50;
+  int size_h = 50;
 
   set_icon_offset(w_number, &x_pos, &y_pos);
 
@@ -747,6 +758,7 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos)
   int size_w = 50;
   int size_h = 50;
 
+
   if ((direct >= 23) && (direct < 68))
   {
     // ("NE");
@@ -805,46 +817,31 @@ void display_battery(uint16_t pos_y)
   {
     display.drawBitmap(50, 281, bat_empty, 24, 16, GxEPD_BLACK);
     display.print(str_bat_error);
+    return;
   }
   else if ((percent > 85) && (percent < 101))
-  {
     display.drawBitmap(pos_x_ico, 281, bat_100, 24, 16, GxEPD_BLACK);
-    display.print(percent);
-    display.print("% ");
-  }
   else if ((percent > 60) && (percent < 86))
-  {
     display.drawBitmap(pos_x_ico, 281, bat_75, 24, 16, GxEPD_BLACK);
-    display.print(percent);
-    display.print("% ");
-  }
   else if ((percent > 40) && (percent < 61))
-  {
     display.drawBitmap(pos_x_ico, 281, bat_50, 24, 16, GxEPD_BLACK);
-    display.print(percent);
-    display.print("% ");
-  }
   else if ((percent > 10) && (percent < 41))
-  {
     display.drawBitmap(pos_x_ico, 281, bat_25, 24, 16, GxEPD_BLACK);
-    display.print(percent);
-    display.print("% ");
-  }
   else if (percent < 11)
-  {
     display.drawBitmap(pos_x_ico, 281, bat_empty, 24, 16, GxEPD_BLACK);
+  
     display.print(percent);
     display.print("% ");
-  }
-
 }
 
 //===========================================================================================================================================
 void go_to_sleep(int seconds)
 {
+#ifdef USE_UART
   Serial.print(str_sleep);
   Serial.print(seconds);
   Serial.println(str_seconds);
+#endif
   ESP.deepSleep(seconds * 1000000, WAKE_RF_DEFAULT);
   delay(2000);
 }
@@ -852,6 +849,7 @@ void go_to_sleep(int seconds)
 //===========================================================================================================================================
 void print_actual_weather()
 {
+#ifdef USE_UART
   Serial.println("actual weather:");
   Serial.println(dataC.LocalObservationDateTime);
   Serial.println(dataC.EpochTime);
@@ -871,10 +869,12 @@ void print_actual_weather()
   Serial.println(dataC.CloudCover);
   Serial.println(dataC.Pressure);
   Serial.println(dataC.WindDirection);
+#endif
 }
 //===========================================================================================================================================
 void print_dataH()
 {
+#ifdef USE_UART
   for (int i = 0 ; i <= 3; i += 3) {
     Serial.print("Czas: ");
     Serial.println(dataH[i].DateTime);
@@ -909,17 +909,6 @@ void print_dataH()
     Serial.println("  ");
     Serial.println("  ");
   }
+#endif
 }
-
-//===========================================================================================================================================
-void draw_margin(String text, int data_len)
-{
-  int margin_size = data_len - text.length();
-  while (margin_size > 0)
-  {
-    display.print("  ");
-    margin_size--;
-  }
-}
-
 //===========================================================================================================================================
