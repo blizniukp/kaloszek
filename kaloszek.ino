@@ -111,7 +111,6 @@ void setup()
   //---------------------------------------------------------------------------- WIFI
 #ifdef USE_WIFI
   wifi_connection_status = wifi_connect();
-  int timeStart = millis();
 #endif
 
   //---------------------------------------------------------------------------- BATTERY
@@ -360,6 +359,45 @@ int get_hourly_forcast()
 }
 
 //===========================================================================================================================================
+void display_forecast(int idx, int pos_y_temp, int pos_y_time)
+{
+  float my_temp = round(dataH[idx].Temperature * 10) / 10.0;
+  char new_date[32];
+  char new_data[8];
+  int pos_x_ico;
+  int pos_x_time;
+  int pos_x_temp;
+
+  //-------------------------------------------------- temp & ico
+  int my_t = (int)(round(my_temp));
+
+  switch (idx)
+  {
+    case 2: pos_x_ico = 22; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
+    case 5: pos_x_ico = 122; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t);  break;
+    case 8: pos_x_ico = 222; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
+    case 11: pos_x_ico = 322; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
+  }
+
+  display_hourly_weather_icon(dataH[idx].WeatherIcon, pos_x_ico, pos_y_temp - 80);
+
+  display.setFont(&Open_Sans_Bold_26pt_Ext);
+  display.setCursor(pos_x_temp, pos_y_temp);
+  display.print(my_t);
+  display.print(str_st1_c);
+
+  //-------------------------------------------------- time
+  dataH[idx].DateTime.toCharArray(new_date, 20);
+  memmove(new_date, new_date + 11, 8);
+  memcpy(new_data, new_date, 5);
+  new_data[5] = 0;
+
+  display.setFont(&Roboto_Medium_18);
+  display.setCursor(pos_x_time, pos_y_time);
+  display.print(new_data);
+}
+
+//===========================================================================================================================================
 void display_weather(int wifi_connection_status, int w_status , int h_status)
 {
   char new_date[32];
@@ -535,10 +573,10 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
   //----------------------------------------------------------------------------- weather forcast
   if (h_status == 0)
   {
-    display_forcast(2, pos_y_4_line, pos_y_5_line);         //3h
-    display_forcast(5, pos_y_4_line, pos_y_5_line);         //6h
-    display_forcast(8, pos_y_4_line, pos_y_5_line);         //9h
-    display_forcast(11, pos_y_4_line, pos_y_5_line);        //12h
+    display_forecast(2, pos_y_4_line, pos_y_5_line);         //3h
+    display_forecast(5, pos_y_4_line, pos_y_5_line);         //6h
+    display_forecast(8, pos_y_4_line, pos_y_5_line);         //9h
+    display_forecast(11, pos_y_4_line, pos_y_5_line);        //12h
   }
 
   display.display();
@@ -547,45 +585,6 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
 #ifdef USE_UART
   Serial.println("EPD is sleeping");
 #endif
-}
-
-//===========================================================================================================================================
-void display_forcast(int idx, int pos_y_temp, int pos_y_time)
-{
-  float my_temp = round(dataH[idx].Temperature * 10) / 10.0;
-  char new_date[32];
-  char new_data[8];
-  int pos_x_ico;
-  int pos_x_time;
-  int pos_x_temp;
-
-  //-------------------------------------------------- temp & ico
-  int my_t = (int)(round(my_temp));
-
-  switch (idx)
-  {
-    case 2: pos_x_ico = 22; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-    case 5: pos_x_ico = 122; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t);  break;
-    case 8: pos_x_ico = 222; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-    case 11: pos_x_ico = 322; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-  }
-
-  display_hourly_weather_icon(dataH[idx].WeatherIcon, pos_x_ico, pos_y_temp - 80);
-
-  display.setFont(&Open_Sans_Bold_26pt_Ext);
-  display.setCursor(pos_x_temp, pos_y_temp);
-  display.print(my_t);
-  display.print(str_st1_c);
-
-  //-------------------------------------------------- time
-  dataH[idx].DateTime.toCharArray(new_date, 20);
-  memmove(new_date, new_date + 11, 8);
-  memcpy(new_data, new_date, 5);
-  new_data[5] = 0;
-
-  display.setFont(&Roboto_Medium_18);
-  display.setCursor(pos_x_time, pos_y_time);
-  display.print(new_data);
 }
 
 //===========================================================================================================================================
@@ -829,9 +828,9 @@ void display_battery(uint16_t pos_y)
     display.drawBitmap(pos_x_ico, 281, bat_25, 24, 16, GxEPD_BLACK);
   else if (percent < 11)
     display.drawBitmap(pos_x_ico, 281, bat_empty, 24, 16, GxEPD_BLACK);
-  
-    display.print(percent);
-    display.print("% ");
+
+  display.print(percent);
+  display.print("% ");
 }
 
 //===========================================================================================================================================
