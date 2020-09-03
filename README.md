@@ -5,7 +5,7 @@ KALOSZEK is a simple device based on ESP8266 which gets informations shared by A
 <H2>
 </H2>
 
-<div align="center"><img src="img/1.jpg"></div>
+<div align="center"><img src="img/2.jpg"></div>
 
 <H2> Hardware </H2>
 
