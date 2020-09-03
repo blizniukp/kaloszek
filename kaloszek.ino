@@ -53,6 +53,7 @@
 #include "epd_iconpack.h"
 #include "epd_main_iconpack.h"
 #include "epd_info_iconpack.h"
+#include "epd_info_small_iconpack.h"
 
 #include "data/fonts/OpenSansBold26ptExt.h"
 #include "data/fonts/OpenSansBold56ptExt.h"
@@ -359,42 +360,49 @@ int get_hourly_forcast()
 }
 
 //===========================================================================================================================================
-void display_forecast(int idx, int pos_y_temp, int pos_y_time)
+void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, int y_pos_time)
 {
-  float my_temp = round(dataH[idx].Temperature * 10) / 10.0;
+  int my_temp = (int)(round(dataH[idx].Temperature));
   char new_date[32];
   char new_data[8];
-  int pos_x_ico;
-  int pos_x_time;
-  int pos_x_temp;
-
-  //-------------------------------------------------- temp & ico
-  int my_t = (int)(round(my_temp));
-
-  switch (idx)
-  {
-    case 2: pos_x_ico = 22; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-    case 5: pos_x_ico = 122; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t);  break;
-    case 8: pos_x_ico = 222; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-    case 11: pos_x_ico = 322; pos_x_time = pos_x_ico + 2; pos_x_temp = set_forcast_temperature_position(pos_x_ico, my_t); break;
-  }
-
-  display_hourly_weather_icon(dataH[idx].WeatherIcon, pos_x_ico, pos_y_temp - 80);
 
   display.setFont(&Open_Sans_Bold_26pt_Ext);
-  display.setCursor(pos_x_temp, pos_y_temp);
-  display.print(my_t);
-  display.print(str_st1_c);
+  display.setCursor(x_pos_temp + 10, y_pos_temp);
+  display.print(my_temp);
+  display.print("*C");
 
-  //-------------------------------------------------- time
+  display.setFont(&FreeSansBold9pt7b);
   dataH[idx].DateTime.toCharArray(new_date, 20);
   memmove(new_date, new_date + 11, 8);
   memcpy(new_data, new_date, 5);
   new_data[5] = 0;
-
-  display.setFont(&Roboto_Medium_18);
-  display.setCursor(pos_x_time, pos_y_time);
+  display.setCursor(x_pos_time, y_pos_time);
   display.print(new_data);
+
+  display_hourly_weather_icon(dataH[idx].WeatherIcon, x_pos_time - 5, y_pos_temp - 85);
+}
+
+void display_wind_dir(int16_t direct, int x_pos, int y_pos)
+{
+  int size_w = 50;
+  int size_h = 50;
+
+  if ((direct >= 23) && (direct < 68)) // ("NE");
+    display.drawBitmap(x_pos, y_pos, winddir7, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 68) && (direct < 113)) // ("E");
+    display.drawBitmap(x_pos, y_pos, winddir8, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 113) && (direct < 158)) // ("SE");
+    display.drawBitmap(x_pos, y_pos, winddir4, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 158) && (direct < 203)) // ("S");
+    display.drawBitmap(x_pos, y_pos, winddir2, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 203) && (direct < 248)) // ("SW");
+    display.drawBitmap(x_pos, y_pos, winddir3, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 248) && (direct < 293)) // ("W");
+    display.drawBitmap(x_pos, y_pos, winddir1, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 293) && (direct < 338)) // ("NW");
+    display.drawBitmap(x_pos, y_pos, winddir6, size_w, size_h, GxEPD_BLACK);
+  else if ((direct >= 338) || (direct < 23)) // ("N");
+    display.drawBitmap(x_pos, y_pos, winddir5, size_w, size_h, GxEPD_BLACK);
 }
 
 //===========================================================================================================================================
@@ -404,27 +412,21 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
   char new_data[8];
   float my_temp;
 
-  int pos_y_1_line = 64;    // aktualna temperatura
-  int pos_y_2_line = 118;   // temperatura odczuwalna + UV
+  int pos_y_1_line = 72;    // aktualna temperatura
+  int pos_y_2_line = 117;   // temperatura odczuwalna + UV
   int pos_y_w_line = 114;   // opis pogody
-  int pos_y_3_line = 148;   // ciśnienie + wilgotność itd
-  int pos_y_4_line = 244;   // temp prognozy
-  int pos_y_5_line = 268;   // czas prognozy
-  int pos_y_6_line = 295;   // status
-
-  int pos_x_wind;
-  int pos_x_wind_ico;
-
-  int pos_x_prob;
-  int pos_x_prob_ico;
+  int pos_y_3_line = 144;   // ciśnienie + wilgotność itd
+  int pos_y_4_line = 242;
+  int pos_y_5_line = 267;
+  int pos_y_6_line = 294;
 
   display.fillScreen(GxEPD_WHITE);
   display.setRotation(0);
   display.setTextColor(GxEPD_BLACK);
 
   //----------------------------------------------------------------------------- background
-  display.fillRect(1, 160, 399, 2, GxEPD_BLACK);
-  display.fillRect(1, 276, 399, 2, GxEPD_BLACK);
+  display.fillRect(1, 150, 399, 3, GxEPD_BLACK);
+  display.fillRect(1, 278, 399, 2, GxEPD_BLACK);
 
   //----------------------------------------------------------------------------- 1. line
   if (w_status == 0)
@@ -432,90 +434,42 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     display.setFont(&Open_Sans_Bold_56pt_Ext);
 
     my_temp = round(dataC.Temperature * 10) / 10.0;
-    display.setCursor(25, pos_y_1_line);
+    display.setCursor(20, pos_y_1_line);
     display.print(my_temp, 1);
-    display.print(str_st1_c);
+    display.print("*C");
 
-    //----------------------------------------------------------------------------- 2. line
-
-    //----------------------------------------------------- real_temp
+    //------------------------------------------------ real temp
     display.setFont(&Open_Sans_Bold_26pt_Ext);
-    display.setCursor(10, pos_y_2_line);
+    display.setCursor(20, pos_y_2_line);
 
     int real_temp = (int)(round(dataC.RealFeelTemperature));
     display.print(real_temp);
-    display.print(str_st1_c);
+    display.print("*C");
 
-    //----------------------------------------------------- humidity
-    int humidity = int(round(dataC.RelativeHumidity));
-
-    display.drawBitmap(90, pos_y_2_line - 25, hum_ico, 32, 32, GxEPD_BLACK);          //wypozycjonowac
-    display.setCursor(122, pos_y_2_line);
-    display.print(humidity);
-    display.print(str_percent);
-
-    //----------------------------------------------------- uv
-    //int uv_index = (int)(round(dataC.UVIndex));
-    //display.print(str_uvindex);
-    //display.print(uv_index);
-
-    //----------------------------------------------------------------------------- 3. line
-
-    //----------------------------------------------------- pressure
+    //------------------------------------------------ press, hum, wind, rain
+    int info_icon_height = 25;
+    show_info_icon(1, 2, pos_y_3_line - info_icon_height);
+    display.setFont(&FreeSansBold12pt7b);
     int pressure = int(round(dataC.Pressure));
-
-    display.setCursor(10, pos_y_3_line);
+    display.setCursor(30, pos_y_3_line);
     display.print(pressure);
-    display.print(str_hpa);
 
-    //----------------------------------------------------- wind
+    show_info_icon(2, 90, pos_y_3_line - info_icon_height);
+    int humidity = int(round(dataC.RelativeHumidity));
+    display.setCursor(120, pos_y_3_line);
+    display.print(humidity);
+
+    show_info_icon(3, 155, pos_y_3_line - info_icon_height);
     int wind_speed = (int)(round(dataC.WindSpeed));
-
-    if (wind_speed < 10)                                                            //ok
-    {
-      pos_x_wind = 160;
-      pos_x_wind_ico = 235;
-    }
-    else if ((wind_speed > 9) && (wind_speed < 100))                              //ok
-    {
-      pos_x_wind = 150;
-      pos_x_wind_ico = 235;
-    }
-    else                                                                            //ok
-    {
-      pos_x_wind = 145;
-      pos_x_wind_ico = 245;
-    }
-
-    display.setCursor(pos_x_wind, pos_y_3_line);
+    display.setCursor(187, pos_y_3_line);
     display.print(wind_speed);
-    display.print(str_kmh);
 
-    display_wind_dir(dataC.WindDirection, pos_x_wind_ico, pos_y_3_line - 33);       //ok
+    show_info_icon(4, 240, pos_y_3_line - info_icon_height);
+    display_wind_dir(dataC.WindDirection, 268, pos_y_3_line - 30);
 
-    //----------------------------------------------------- probability
-    int prob = (dataH[1].RainProbability);
-
-    if (prob < 10)                                                                  //ok
-    {
-      pos_x_prob_ico = 320;
-      pos_x_prob = 357;
-    }
-    else if ((prob > 9) && (prob < 100))                                          //ok
-    {
-      pos_x_prob_ico = 307;
-      pos_x_prob = 345;
-    }
-    else                                                                            //ok
-    {
-      pos_x_prob_ico = 295;
-      pos_x_prob = 332;
-    }
-
-    display.drawBitmap(pos_x_prob_ico, pos_y_3_line - 27, infoIco5, 35, 35, GxEPD_BLACK);     //ok
-    display.setCursor(pos_x_prob, pos_y_3_line);
-    display.print(prob);
-    display.print('%');
+    show_info_icon(5, 308, pos_y_3_line - info_icon_height);
+    display.setCursor(345, pos_y_3_line);
+    display.print(((int)(dataH[1].RainProbability + dataH[2].RainProbability + dataH[3].RainProbability) / 3));
 
     //----------------------------------------------------------------------------- main icon and weather description
     display_main_weather_icon(dataC.WeatherIcon, pos_x_big_ico, 4);
@@ -542,41 +496,31 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
     display.setCursor(232, pos_y_6_line);
     display.print(str_accuweather_err);
   }
+  //----------------------------------------------------------------------------- status row
+  display.setFont(&FreeSansBold9pt7b);
+  display.setCursor(10, pos_y_6_line);
 
   //----------------------------------------------------------------------------- wifi
-  display.setFont(&FreeSansBold9pt7b);
-  display.setCursor(30, pos_y_6_line);
-
-#ifdef USE_WIFI_ICO
-  display.drawBitmap(6, 281, wifi_ico, 24, 16, GxEPD_BLACK);
-#endif
-
   if (wifi_connection_status == 0)
-  {
-#ifndef USE_WIFI_ICO
-    display.print(WiFi.SSID());
-    display.print(' ');
-#endif
-
-    display.print(WiFi.RSSI());
-
-    display.print(str_db);
-  }
+    display.drawBitmap(6, 281, infoSmallIco1, 19, 19, GxEPD_BLACK);
   else
-  {
-    display.print(str_wifi_err);
-  }
+    display.drawBitmap(6, 281, infoSmallIco2, 19, 19, GxEPD_BLACK);
+
+  //----------------------------------------------------------------------------- uv index
+  display.drawBitmap(30, 281, infoSmallIco3, 19, 19, GxEPD_BLACK);
+  display.setCursor(55, pos_y_6_line);
+  int uv_index = (int)(round(dataC.UVIndex));
+  display.print(uv_index);
 
   //----------------------------------------------------------------------------- battery
   display_battery(pos_y_6_line);
 
-  //----------------------------------------------------------------------------- weather forcast
-  if (h_status == 0)
-  {
-    display_forecast(2, pos_y_4_line, pos_y_5_line);         //3h
-    display_forecast(5, pos_y_4_line, pos_y_5_line);         //6h
-    display_forecast(8, pos_y_4_line, pos_y_5_line);         //9h
-    display_forecast(11, pos_y_4_line, pos_y_5_line);        //12h
+  //----------------------------------------------------------------------------- weather forecast
+  if (h_status == 0) {
+    display_forecast(2, 10, pos_y_4_line, 25, pos_y_5_line);           //3h
+    display_forecast(5, 110, pos_y_4_line, 125, pos_y_5_line);         //6h
+    display_forecast(8, 210, pos_y_4_line, 225, pos_y_5_line);         //9h
+    display_forecast(11, 310, pos_y_4_line, 325, pos_y_5_line);        //12h
   }
 
   display.display();
@@ -600,27 +544,6 @@ uint16_t set_weather_description_offset(String str)
   uint16_t  pos_x_napisu = (x_center - (tbw / 2)) - tbx;
 
   return pos_x_napisu;
-}
-
-//===========================================================================================================================================
-int set_forcast_temperature_position(int pos_x, int temp)
-{
-  if (temp < -9)
-  {
-    return pos_x - 8;
-  }
-  else if ((temp > -10) && (temp < 0))
-  {
-    return pos_x - 2;
-  }
-  else if ((temp > -1) && (temp < 10))
-  {
-    return pos_x + 4;
-  }
-  else
-  {
-    return pos_x - 2;
-  }
 }
 
 //===========================================================================================================================================
@@ -752,51 +675,18 @@ void display_main_weather_icon(uint8_t w_number, int x_pos, int y_pos)
 }
 
 //===========================================================================================================================================
-void display_wind_dir(int16_t direct, int x_pos, int y_pos)
+void show_info_icon(uint8_t w_number, int x_pos, int y_pos)
 {
-  int size_w = 50;
-  int size_h = 50;
+  int size_w = 35;
+  int size_h = 35;
 
-
-  if ((direct >= 23) && (direct < 68))
+  switch (w_number)
   {
-    // ("NE");
-    display.drawBitmap(x_pos, y_pos, winddir7, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 68) && (direct < 113))
-  {
-    // ("E");
-    display.drawBitmap(x_pos, y_pos, winddir8, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 113) && (direct < 158))
-  {
-    // ("SE");
-    display.drawBitmap(x_pos, y_pos, winddir4, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 158) && (direct < 203))
-  {
-    // ("S");
-    display.drawBitmap(x_pos, y_pos, winddir2, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 203) && (direct < 248))
-  {
-    // ("SW");
-    display.drawBitmap(x_pos, y_pos, winddir3, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 248) && (direct < 293))
-  {
-    // ("W");
-    display.drawBitmap(x_pos, y_pos, winddir1, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 293) && (direct < 338))
-  {
-    // ("NW");
-    display.drawBitmap(x_pos, y_pos, winddir6, size_w, size_h, GxEPD_BLACK);
-  }
-  else if ((direct >= 338) || (direct < 23))
-  {
-    // ("N");
-    display.drawBitmap(x_pos, y_pos, winddir5, size_w, size_h, GxEPD_BLACK);
+    case 1: display.drawBitmap(x_pos, y_pos, infoIco1, size_w, size_h, GxEPD_BLACK); break;
+    case 2: display.drawBitmap(x_pos, y_pos, infoIco2, size_w, size_h, GxEPD_BLACK); break;
+    case 3: display.drawBitmap(x_pos, y_pos, infoIco3, size_w, size_h, GxEPD_BLACK); break;
+    case 4: display.drawBitmap(x_pos, y_pos, infoIco4, size_w, size_h, GxEPD_BLACK); break;
+    case 5: display.drawBitmap(x_pos, y_pos, infoIco5, size_w, size_h, GxEPD_BLACK); break;
   }
 }
 
@@ -804,17 +694,17 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos)
 void display_battery(uint16_t pos_y)
 {
   display.setFont(&FreeSansBold9pt7b);
-  display.setCursor(130, pos_y);
+  display.setCursor(250, pos_y);
 
   uint16_t percent = pwr_mgmt.percent();
 
   if ((percent > 100) && (percent < 250)) percent = 100;
 
-  int pos_x_ico = 100;
+  int pos_x_ico = 220;
 
   if (percent > 100)
   {
-    display.drawBitmap(50, 281, bat_empty, 24, 16, GxEPD_BLACK);
+    display.drawBitmap(pos_x_ico, 281, bat_empty, 24, 16, GxEPD_BLACK);
     display.print(str_bat_error);
     return;
   }
@@ -830,7 +720,7 @@ void display_battery(uint16_t pos_y)
     display.drawBitmap(pos_x_ico, 281, bat_empty, 24, 16, GxEPD_BLACK);
 
   display.print(percent);
-  display.print("% ");
+  display.print("%");
 }
 
 //===========================================================================================================================================
