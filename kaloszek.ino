@@ -44,6 +44,7 @@
 //#define     PRINT_WEATHER           1
 
 #define     USE_MAX17048            1
+#define     USE_AIRLY               1
 
 #define     UPDATE_PERIOD           1800                    //seconds
 #define     WIFI_ERR_PERIOD         300                     //seconds
@@ -82,6 +83,9 @@ AccuweatherCurrentData dataC;
 int wifi_connection_status;
 int weather_status;
 int hourly_status;
+#ifdef USE_AIRLY
+int airly_status;
+#endif
 
 MAX17048 pwr_mgmt;
 
@@ -90,102 +94,10 @@ const uint16_t pos_x_big_ico = 260;
 int acu_key = 0;
 
 Accuweather aw(acu_keys[0], 274663, "en-en", true);
-
-//===========================================================================================================================================
-//===========================================================================================================================================
-//===========================================================================================================================================
-void setup()
-{
-  //---------------------------------------------------------------------------- SERIAL
-#ifdef USE_UART
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("Setup");
+#ifdef USE_AIRLY
+#include "AirlyApi.h"
+AirlyApi airlyApi(airly_key, airly_latitude, airly_longitude, distance);
 #endif
-  delay(100);
-
-  //---------------------------------------------------------------------------- EPD
-#ifdef USE_EPD
-  display.init(115200);
-#endif
-
-  //---------------------------------------------------------------------------- WIFI
-#ifdef USE_WIFI
-  wifi_connection_status = wifi_connect();
-#endif
-
-  //---------------------------------------------------------------------------- BATTERY
-#ifdef USE_MAX17048
-  Wire.begin(D1, D6);                         //sda,scl
-  pwr_mgmt.attatch(Wire);
-
-#ifdef USE_UART
-  //Serial.print("VCELL ADC : ");
-  //Serial.println(pwr_mgmt.adc());
-  Serial.print("VCELL V   : ");
-  Serial.println(pwr_mgmt.voltage());
-  Serial.print("VCELL SOC : ");
-  Serial.print(pwr_mgmt.percent());
-  Serial.println(" \%");
-  //Serial.print("VCELL SOC : ");
-  //Serial.print(pwr_mgmt.accuratePercent());
-  //Serial.println(" \%");
-  Serial.println();
-#endif
-
-#endif
-
-  //---------------------------------------------------------------------------- ACCUWEATHER
-  if (wifi_connection_status == 0)
-  {
-    do {
-      weather_status = get_weather();
-#ifdef USE_UART
-      Serial.print("Accu status:");
-      Serial.println(weather_status);
-#endif
-
-      hourly_status = get_hourly_forcast();
-#ifdef USE_UART
-      Serial.print("Hourly status:");
-      Serial.println(hourly_status);
-#endif
-
-      if ((weather_status == 0) && (hourly_status == 0)) break;
-
-      acu_key++;
-      if (acu_key >= ACU_MAX_KEYS) break;
-#ifdef USE_UART
-      Serial.println("Change Accuweather api key");
-#endif
-      aw.changeApiKey(acu_keys[acu_key]);
-
-    } while ((weather_status != 0) || (hourly_status != 0));
-  }
-
-
-  //---------------------------------------------------------------------------- DISPLAY DATA
-#ifdef USE_EPD
-#ifdef USE_UART
-  Serial.println("display_weather");
-#endif
-  display_weather(wifi_connection_status, weather_status, hourly_status);
-#endif
-
-  //---------------------------------------------------------------------------- GO TO SLEEP
-  if (wifi_connection_status == 0)
-    go_to_sleep(UPDATE_PERIOD);
-  else
-    go_to_sleep(WIFI_ERR_PERIOD);
-
-}
-//===========================================================================================================================================
-//===========================================================================================================================================
-//===========================================================================================================================================
-void loop()
-{
-
-}
 
 //===========================================================================================================================================
 //===========================================================================================================================================
@@ -418,7 +330,11 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos)
 }
 
 //===========================================================================================================================================
+#ifdef USE_AIRLY
+void display_weather(int wifi_connection_status, int w_status , int h_status, int a_status)
+#else
 void display_weather(int wifi_connection_status, int w_status , int h_status)
+#endif
 {
   char new_date[32];
   char new_data[8];
@@ -524,6 +440,17 @@ void display_weather(int wifi_connection_status, int w_status , int h_status)
   int uv_index = (int)(round(dataC.UVIndex));
   display.print(uv_index);
 
+  //----------------------------------------------------------------------------- airly
+#ifdef USE_AIRLY
+  display.drawBitmap(80, 281, infoSmallIco4, 19, 19, GxEPD_BLACK);
+  display.setCursor(105, pos_y_6_line);
+
+  if (a_status == 0) {
+    display.print(airlyApi.getAirQualityLevel());
+  } else {
+    display.print("!");
+  }
+#endif
   //----------------------------------------------------------------------------- battery
   display_battery(pos_y_6_line);
 
@@ -812,4 +739,136 @@ void print_dataH()
   }
 #endif
 }
+//===========================================================================================================================================
+#ifdef USE_AIRLY
+int checkNearestSonsor() {
+  if (airlyApi.getNearestSensor())
+  {
+    int locationId = airlyApi.getLocationId();
+#ifdef USE_SERIAL_PORT
+    Serial.println("LocationId: " + String(locationId));
+#endif
+    if (airlyApi.getSensorValues(locationId))
+    {
+#ifdef USE_SERIAL_PORT
+      Serial.print("AirQualityInde: "); Serial.println(airlyApi.getAirQualityIndex());
+      Serial.print("AirQualityLevel: "); Serial.println(airlyApi.getAirQualityLevel());
+#endif
+      return 0;
+    } else
+    {
+#ifdef USE_SERIAL_PORT
+      Serial.println("getSensorValues error");
+#endif
+    }
+  }
+  return 1;
+}
+#endif
+
+//===========================================================================================================================================
+//===========================================================================================================================================
+//===========================================================================================================================================
+void setup()
+{
+  //---------------------------------------------------------------------------- SERIAL
+#ifdef USE_UART
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println("Setup");
+#endif
+  delay(100);
+
+  //---------------------------------------------------------------------------- EPD
+#ifdef USE_EPD
+  display.init(115200);
+#endif
+
+  //---------------------------------------------------------------------------- WIFI
+#ifdef USE_WIFI
+  wifi_connection_status = wifi_connect();
+#endif
+
+  //---------------------------------------------------------------------------- BATTERY
+#ifdef USE_MAX17048
+  Wire.begin(D1, D6);                         //sda,scl
+  pwr_mgmt.attatch(Wire);
+
+#ifdef USE_UART
+  //Serial.print("VCELL ADC : ");
+  //Serial.println(pwr_mgmt.adc());
+  Serial.print("VCELL V   : ");
+  Serial.println(pwr_mgmt.voltage());
+  Serial.print("VCELL SOC : ");
+  Serial.print(pwr_mgmt.percent());
+  Serial.println(" \%");
+  //Serial.print("VCELL SOC : ");
+  //Serial.print(pwr_mgmt.accuratePercent());
+  //Serial.println(" \%");
+  Serial.println();
+#endif
+
+#endif
+
+  //---------------------------------------------------------------------------- ACCUWEATHER
+  if (wifi_connection_status == 0)
+  {
+    do {
+      weather_status = get_weather();
+#ifdef USE_UART
+      Serial.print("Accu status:");
+      Serial.println(weather_status);
+#endif
+
+      hourly_status = get_hourly_forcast();
+#ifdef USE_UART
+      Serial.print("Hourly status:");
+      Serial.println(hourly_status);
+#endif
+
+      if ((weather_status == 0) && (hourly_status == 0)) break;
+
+      acu_key++;
+      if (acu_key >= ACU_MAX_KEYS) break;
+#ifdef USE_UART
+      Serial.println("Change Accuweather api key");
+#endif
+      aw.changeApiKey(acu_keys[acu_key]);
+
+    } while ((weather_status != 0) || (hourly_status != 0));
+
+#ifdef USE_AIRLY
+    airly_status = checkNearestSonsor();
+#endif
+  }
+
+
+  //---------------------------------------------------------------------------- DISPLAY DATA
+#ifdef USE_EPD
+#ifdef USE_UART
+  Serial.println("display_weather");
+#endif
+#ifdef USE_AIRLY
+  display_weather(wifi_connection_status, weather_status, hourly_status, airly_status);
+#else
+  display_weather(wifi_connection_status, weather_status, hourly_status);
+#endif
+#endif
+
+  //---------------------------------------------------------------------------- GO TO SLEEP
+  if (wifi_connection_status == 0)
+    go_to_sleep(UPDATE_PERIOD);
+  else
+    go_to_sleep(WIFI_ERR_PERIOD);
+
+}
+//===========================================================================================================================================
+//===========================================================================================================================================
+//===========================================================================================================================================
+void loop()
+{
+
+}
+//===========================================================================================================================================
+//===========================================================================================================================================
 //===========================================================================================================================================
