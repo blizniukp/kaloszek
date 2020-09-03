@@ -62,7 +62,7 @@
 #include "data/fonts/RobotoMedPlain18.h"
 
 //===========================================================================================================================================
-GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D3 ss*/ 0 , /*DC=D8*/ 15, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
+GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D8 ss*/ 15 , /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 
 const char str_sleep[] = "I'm going to sleep for ";
 const char str_seconds[] = "seconds";
@@ -166,18 +166,17 @@ void setup()
 
   //---------------------------------------------------------------------------- DISPLAY DATA
 #ifdef USE_EPD
+#ifdef USE_UART
+  Serial.println("display_weather");
+#endif
   display_weather(wifi_connection_status, weather_status, hourly_status);
 #endif
 
   //---------------------------------------------------------------------------- GO TO SLEEP
   if (wifi_connection_status == 0)
-  {
     go_to_sleep(UPDATE_PERIOD);
-  }
   else
-  {
     go_to_sleep(WIFI_ERR_PERIOD);
-  }
 
 }
 //===========================================================================================================================================
@@ -314,6 +313,7 @@ int get_weather()
 //===========================================================================================================================================
 int get_hourly_forcast()
 {
+#ifdef USE_ACCUWEATHER
 #ifdef USE_HOURLY_FORCAST
 
   int timeStart = millis();
@@ -355,7 +355,19 @@ int get_hourly_forcast()
 
   dataH[1].RainProbability = 13;
 #endif
+#else
+  dataH[2].Temperature = -1.20;
+  dataH[5].Temperature = 4.40;
+  dataH[8].Temperature = 4.90;
+  dataH[11].Temperature = 27.90;
 
+  dataH[2].DateTime = "2019-09-21T15:19:21+00:00";
+  dataH[5].DateTime = "2019-09-21T18:19:21+00:00";
+  dataH[8].DateTime = "2019-09-21T11:19:21+00:00";
+  dataH[11].DateTime = "2019-09-22T00:19:21+00:00";
+
+  dataH[1].RainProbability = 13;
+#endif
   return 0;
 }
 
@@ -540,7 +552,7 @@ uint16_t set_weather_description_offset(String str)
   display.setFont(&Roboto_Medium_18);
   display.getTextBounds(str.c_str(), 0, 0, &tbx, &tby, &tbw, &tbh);
 
-  uint16_t x_center = pos_x_big_ico + (90 / 2);             //srodek ikonki pogody 90 - uwzglednic wielkosc ikonki w obliczeniach
+  uint16_t x_center = pos_x_big_ico + (90 / 2);
   uint16_t  pos_x_napisu = (x_center - (tbw / 2)) - tbx;
 
   return pos_x_napisu;
