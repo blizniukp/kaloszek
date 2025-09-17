@@ -36,7 +36,7 @@ bool AirlyApi::doUpdate(String url) {
   Serial.println(full_url);
 #endif
 
-  if (!http.begin(String(AILRLY_API_ADDRESS + url)))
+  if (!http.begin(client, String(AILRLY_API_ADDRESS + url)))
   {
 #ifdef USE_SERIAL_PORT
     Serial.println("AirlyApi: http.begin error");

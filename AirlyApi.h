@@ -43,6 +43,7 @@ class AirlyApi: public JsonListener {
     float airQualityIndex;
     String airQualityLevel;
 
+    WiFiClient client;
     HTTPClient http;
 
     virtual void whitespace(char c);

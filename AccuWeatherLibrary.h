@@ -2,6 +2,7 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 #include "JsonStreamingParser.h"
 #include "JsonListener.h"
 #include <limits.h>
@@ -218,6 +219,7 @@ class AccuweatherDailyParser: public AccuweatherParser {
 //Main class for sending requests and parsing responses
 class Accuweather {
 public:
+    WiFiClient client;
     HTTPClient http;
     JsonStreamingParser parser;
     AccuweatherParser* listener = NULL;
