@@ -5,14 +5,14 @@
 #include <GxEPD2_BW.h>
 #include <JsonListener.h>
 
-#include "AccuWeatherLibrary.h"
+#include "weatherapi.h"
 #include "kaloszek_config.h"
 #include "MAX17048.h"
 
 #define USE_EPD 1
 #define USE_WIFI 1
 
-#define USE_ACCUWEATHER 1
+#define USE_WEATHERAPI 1
 #define USE_HOURLY_FORCAST 1
 
 #define USE_WIFI_ICO 1
@@ -41,7 +41,7 @@ GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D8 ss*/ 15, /*
 
 const char str_sleep[] = "I'm going to sleep for ";
 const char str_seconds[] = " seconds";
-const char str_accuweather_err[] = "AccuWeather error";
+const char str_weatherapi_err[] = "WeatherApi error";
 const char str_wifi_err[] = "Error :(";
 const char str_db[] = "dB";
 const char str_st1_c[] = "*C";
@@ -51,12 +51,11 @@ const char str_percent[] = "% ";
 const char str_kmh[] = "km/h";
 const char str_bat_error[] = "Battery error";
 
-AccuweatherHourlyData dataH[12];
-AccuweatherCurrentData dataC;
+WeatherApiHourlyData dataH[12];
+WeatherApiCurrentData dataC;
 
 int wifi_connection_status;
 int weather_status;
-int hourly_status;
 #ifdef USE_AIRLY
 int airly_status;
 #endif
@@ -65,9 +64,7 @@ MAX17048 pwr_mgmt;
 
 const uint16_t pos_x_big_ico = 260;
 
-int acu_key = 0;
-
-Accuweather aw(acu_keys[0], 274663, "en-en", true);
+WeatherApi aw(weatherapi_key, 1988803);
 #ifdef USE_AIRLY
 #include "AirlyApi.h"
 AirlyApi airlyApi(airly_key, airly_latitude, airly_longitude, distance);
@@ -102,13 +99,13 @@ int wifi_connect() {
 }
 
 int get_weather() {
-#ifdef USE_ACCUWEATHER
+#ifdef USE_WEATHERAPI
   int timeStart = millis();
 
-  int ret = aw.getCurrent(&dataC);
+  int ret = aw.getForecast(&dataC);
 
   if (ret != 0) {
-    Serial.print("ACCUWEATHER ERROR: ");
+    Serial.print("WeatherApi ERROR: ");
     Serial.println(ret);
     return ret;
   }
@@ -138,58 +135,6 @@ int get_weather() {
   dataC.Pressure = 1023.00;
   return 0;
 #endif
-}
-int get_hourly_forcast() {
-#ifdef USE_ACCUWEATHER
-#ifdef USE_HOURLY_FORCAST
-
-  int timeStart = millis();
-
-  int ret = aw.getHourly(&dataH[0], 12);
-
-  if (ret != 0) {
-    Serial.print("ACCUWEATHER ERROR: ");
-    Serial.println(ret);
-
-    return ret;
-  }
-
-  while (aw.continueDownload() > 0) {
-  }
-
-  //print_dataH();
-
-  timeStart = millis() - timeStart;
-
-  Serial.printf("Downloaded and parsed forcast in %d ms\n", timeStart);
-  Serial.println(String(ESP.getFreeHeap()));
-#else
-  dataH[2].Temperature = -1.20;
-  dataH[5].Temperature = 4.40;
-  dataH[8].Temperature = 4.90;
-  dataH[11].Temperature = 27.90;
-
-  dataH[2].DateTime = "2019-09-21T15:19:21+00:00";
-  dataH[5].DateTime = "2019-09-21T18:19:21+00:00";
-  dataH[8].DateTime = "2019-09-21T11:19:21+00:00";
-  dataH[11].DateTime = "2019-09-22T00:19:21+00:00";
-
-  dataH[1].RainProbability = 13;
-#endif
-#else
-  dataH[2].Temperature = -1.20;
-  dataH[5].Temperature = 4.40;
-  dataH[8].Temperature = 4.90;
-  dataH[11].Temperature = 27.90;
-
-  dataH[2].DateTime = "2019-09-21T15:19:21+00:00";
-  dataH[5].DateTime = "2019-09-21T18:19:21+00:00";
-  dataH[8].DateTime = "2019-09-21T11:19:21+00:00";
-  dataH[11].DateTime = "2019-09-22T00:19:21+00:00";
-
-  dataH[1].RainProbability = 13;
-#endif
-  return 0;
 }
 
 void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, int y_pos_time) {
@@ -236,9 +181,9 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos) {
 }
 
 #ifdef USE_AIRLY
-void display_weather(int wifi_connection_status, int w_status, int h_status, int a_status)
+void display_weather(int wifi_connection_status, int w_status, int a_status)
 #else
-void display_weather(int wifi_connection_status, int w_status, int h_status)
+void display_weather(int wifi_connection_status, int w_status)
 #endif
 {
   char new_date[32];
@@ -314,10 +259,15 @@ void display_weather(int wifi_connection_status, int w_status, int h_status)
     new_data[5] = 0;
     display.setCursor(335, pos_y_6_line);
     display.print(new_data);
+
+    display_forecast(2, 10, pos_y_4_line, 25, pos_y_5_line);     //3h
+    display_forecast(5, 110, pos_y_4_line, 125, pos_y_5_line);   //6h
+    display_forecast(8, 210, pos_y_4_line, 225, pos_y_5_line);   //9h
+    display_forecast(11, 310, pos_y_4_line, 325, pos_y_5_line);  //12h
   } else {
     display.setFont(&FreeSansBold9pt7b);
     display.setCursor(232, pos_y_6_line);
-    display.print(str_accuweather_err);
+    display.print(str_weatherapi_err);
   }
   display.setFont(&FreeSansBold9pt7b);
   display.setCursor(10, pos_y_6_line);
@@ -343,13 +293,6 @@ void display_weather(int wifi_connection_status, int w_status, int h_status)
   }
 #endif
   display_battery(pos_y_6_line);
-
-  if (h_status == 0) {
-    display_forecast(2, 10, pos_y_4_line, 25, pos_y_5_line);     //3h
-    display_forecast(5, 110, pos_y_4_line, 125, pos_y_5_line);   //6h
-    display_forecast(8, 210, pos_y_4_line, 225, pos_y_5_line);   //9h
-    display_forecast(11, 310, pos_y_4_line, 325, pos_y_5_line);  //12h
-  }
 
   display.display();
   display.powerOff();
@@ -548,6 +491,7 @@ void go_to_sleep(int seconds) {
 
 void print_actual_weather() {
   Serial.println("actual weather:");
+  Serial.println(dataC.location.Name);
   Serial.println(dataC.LocalObservationDateTime);
   Serial.println(dataC.EpochTime);
   Serial.println(dataC.WeatherText);
@@ -659,18 +603,8 @@ void setup() {
       Serial.print("Accu status:");
       Serial.println(weather_status);
 
-      hourly_status = get_hourly_forcast();
-      Serial.print("Hourly status:");
-      Serial.println(hourly_status);
-
-      if ((weather_status == 0) && (hourly_status == 0)) break;
-
-      acu_key++;
-      if (acu_key >= ACU_MAX_KEYS) break;
-      Serial.println("Change Accuweather api key");
-      aw.changeApiKey(acu_keys[acu_key]);
-
-    } while ((weather_status != 0) || (hourly_status != 0));
+      if (weather_status == 0) break;
+    } while (weather_status != 0);
 
 #ifdef USE_AIRLY
     airly_status = checkNearestSensor();
@@ -679,9 +613,9 @@ void setup() {
 #ifdef USE_EPD
     Serial.println("display_weather");
 #ifdef USE_AIRLY
-    display_weather(wifi_connection_status, weather_status, hourly_status, airly_status);
+    display_weather(wifi_connection_status, weather_status, airly_status);
 #else
-    display_weather(wifi_connection_status, weather_status, hourly_status);
+    display_weather(wifi_connection_status, weather_status);
 #endif
 #endif
   }

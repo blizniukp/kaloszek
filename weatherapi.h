@@ -9,8 +9,13 @@
 #include <vector>
 #include <map>
 
+typedef struct{
+    String Name;
+}WeatherApiResponseLocation;
+
 //Structures for holding the received data
 typedef struct {
+    WeatherApiResponseLocation location;
     String LocalObservationDateTime;
     String UVIndexText;
     String WeatherText;
@@ -29,7 +34,7 @@ typedef struct {
     uint8_t UVIndex;
     uint8_t WeatherIcon;
 }
-AccuweatherCurrentData;
+WeatherApiCurrentData;
 
 typedef struct {
     String DateTime;
@@ -56,7 +61,7 @@ typedef struct {
     uint8_t UVIndex;
     uint8_t WeatherIcon;
 }
-AccuweatherHourlyData;
+WeatherApiHourlyData;
 
 typedef struct {
     String IconPhrase;
@@ -165,9 +170,9 @@ typedef uint8_t AccuParserTokens;
 
 //The parser creates a stack while parsing the JSON response. This allows a lot of flexibility when creating a parser (e.g. we can infer all previous keys and objects before a given value)
 //The stack contains tokens instead of strings. This greatly reduces memory usage and allows us to compare stack contents much quicker.
-class AccuweatherParser: public JsonListener {
+class WeatherApiParser: public JsonListener {
     public:
-        AccuweatherParser(int maxListLength_, bool isMetric_ = true);
+        WeatherApiParser(int maxListLength_);
         virtual void whitespace(char c);
         virtual void key(String key);
         virtual void value(String value);
@@ -177,7 +182,6 @@ class AccuweatherParser: public JsonListener {
         virtual void endArray();
         virtual void startObject();
         virtual void endObject();
-        bool isMetric = true;
 
     protected:
         std::vector<AccuParserTokens> tokenStack;
@@ -191,23 +195,23 @@ class AccuweatherParser: public JsonListener {
 };
 
 //Descendant classes for parsing particular types of responses
-class AccuweatherCurrentParser: public AccuweatherParser {
+class AccuweatherCurrentParser: public WeatherApiParser {
     public:
-        AccuweatherCurrentParser(AccuweatherCurrentData* data_ptr_, bool isMetric_);
+        AccuweatherCurrentParser(WeatherApiCurrentData* data_ptr_);
         virtual void value(String value);
     protected:
-        AccuweatherCurrentData* data_ptr;
+        WeatherApiCurrentData* data_ptr;
 };
 
-class AccuweatherHourlyParser: public AccuweatherParser {
+class AccuweatherHourlyParser: public WeatherApiParser {
     public:
-        AccuweatherHourlyParser(AccuweatherHourlyData* data_ptr_, int maxListLength_);
+        AccuweatherHourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_);
         virtual void value(String value);
     protected:
-        AccuweatherHourlyData* data_ptr;
+        WeatherApiHourlyData* data_ptr;
 };
 
-class AccuweatherDailyParser: public AccuweatherParser {
+class AccuweatherDailyParser: public WeatherApiParser {
     public:
         AccuweatherDailyParser(AccuweatherDailyData* data_ptr_, int maxListLength_);
         virtual void startObject();
@@ -217,30 +221,22 @@ class AccuweatherDailyParser: public AccuweatherParser {
 };
 
 //Main class for sending requests and parsing responses
-class Accuweather {
+class WeatherApi {
 public:
     WiFiClient client;
     HTTPClient http;
     JsonStreamingParser parser;
-    AccuweatherParser* listener = NULL;
+    WeatherApiParser* listener = NULL;
     const int locationID;
-    const char* languageID;
     const char* apiKey;
-    const bool isMetric;
     int length;
 
-    Accuweather(const char* apiKey_, const int locationID_, const char* languageID_, const bool isMetric_):
+    WeatherApi(const char* apiKey_, const int locationID_):
         locationID(locationID_),
-        languageID(languageID_),
-        apiKey(apiKey_),
-        isMetric(isMetric_){
-
+        apiKey(apiKey_){
     }
 
-    int getCurrent(AccuweatherCurrentData* data_ptr);
-    int getHourly(AccuweatherHourlyData* data_ptr, int hours);
-    int getDaily(AccuweatherDailyData* data_ptr, int days);
+    int getForecast(WeatherApiCurrentData* data_ptr);
     int continueDownload();
-    void changeApiKey(const char *apiKey_);
     void freeConnection();
 };

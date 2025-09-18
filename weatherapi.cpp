@@ -1,4 +1,4 @@
-#include "AccuWeatherLibrary.h"
+#include "weatherapi.h"
 #include "JsonListener.h"
 
 #define SIZE_OF_CONST_TABLE(x) sizeof(x) / sizeof(x[0])
@@ -124,23 +124,22 @@ static const AccuParserTokens dailyForecastsList_suffix[] = { ACCUPARSERBase, AC
 /*
  *  Parser base class
  */
-AccuweatherParser::AccuweatherParser(int maxListLength_, bool isMetric_) {
+WeatherApiParser::WeatherApiParser(int maxListLength_) {
   maxListLength = maxListLength_;
-  isMetric = isMetric_;
 }
 
-void AccuweatherParser::startDocument() {
+void WeatherApiParser::startDocument() {
   tokenStack.push_back(ACCUPARSERBase);
 }
 
-void AccuweatherParser::endDocument() {
+void WeatherApiParser::endDocument() {
   if (tokenStack.back() != ACCUPARSERBase) {
     Serial.println(F("ERROR: Document token not found"));
   }
   popAllKeys();
 }
 
-void AccuweatherParser::key(String key) {
+void WeatherApiParser::key(String key) {
   if (baseListIdx >= maxListLength) {
     return;
   }
@@ -152,7 +151,7 @@ void AccuweatherParser::key(String key) {
   }
 }
 
-void AccuweatherParser::value(String value) {
+void WeatherApiParser::value(String value) {
   if (baseListIdx >= maxListLength) {
     return;
   }
@@ -160,11 +159,11 @@ void AccuweatherParser::value(String value) {
   popAllKeys();
 }
 
-void AccuweatherParser::startArray() {
+void WeatherApiParser::startArray() {
   tokenStack.push_back(ACCUPARSERList);
 }
 
-void AccuweatherParser::endArray() {
+void WeatherApiParser::endArray() {
   if (tokenStack.back() != ACCUPARSERList) {
     Serial.println(F("ERROR: List token not found"));
   }
@@ -173,14 +172,14 @@ void AccuweatherParser::endArray() {
   popAllKeys();
 }
 
-void AccuweatherParser::startObject() {
+void WeatherApiParser::startObject() {
   tokenStack.push_back(ACCUPARSERObject);
   if (STACK_HAS_SUFFIX(baseList_suffix)) {
     baseListIdx++;
   }
 }
 
-void AccuweatherParser::endObject() {
+void WeatherApiParser::endObject() {
   if (tokenStack.back() != ACCUPARSERObject) {
     Serial.println(F("ERROR: Object token not found"));
   }
@@ -189,12 +188,12 @@ void AccuweatherParser::endObject() {
   popAllKeys();
 }
 
-void AccuweatherParser::whitespace(char c) {
+void WeatherApiParser::whitespace(char c) {
   //ignore
 }
 
 //Some housekeeping functions
-void AccuweatherParser::DEBUG_printStack() {
+void WeatherApiParser::DEBUG_printStack() {
   for (auto it = tokenStack.begin(); it != tokenStack.end(); ++it) {
     Serial.print(">");
     Serial.print(*it);
@@ -202,7 +201,7 @@ void AccuweatherParser::DEBUG_printStack() {
   Serial.println("*");
 }
 
-bool AccuweatherParser::stackSuffix(const AccuParserTokens suffix[], int suffix_len) {
+bool WeatherApiParser::stackSuffix(const AccuParserTokens suffix[], int suffix_len) {
   int stackSize = tokenStack.size();
   if (stackSize < suffix_len) {
     return false;
@@ -215,15 +214,9 @@ bool AccuweatherParser::stackSuffix(const AccuParserTokens suffix[], int suffix_
     suffix_len--;
     if (tokenStack[stackSize] != suffix[suffix_len]) {
       if (suffix[suffix_len] == ACCUPARSERUnitPlaceholder) {
-        if (isMetric) {
           if (tokenStack[stackSize] != ACCUPARSERMetric) {
             return false;
           }
-        } else {
-          if (tokenStack[stackSize] != ACCUPARSERImperial) {
-            return false;
-          }
-        }
       } else {
         return false;
       }
@@ -232,14 +225,14 @@ bool AccuweatherParser::stackSuffix(const AccuParserTokens suffix[], int suffix_
   return true;
 }
 
-bool AccuweatherParser::stackContains(const AccuParserTokens token) {
+bool WeatherApiParser::stackContains(const AccuParserTokens token) {
   for (auto it = tokenStack.rbegin(); it != tokenStack.rend(); it++)
     if (*it == token)
       return true;
   return false;
 }
 
-void AccuweatherParser::popAllKeys() {
+void WeatherApiParser::popAllKeys() {
   while (!(tokenStack.back() == ACCUPARSERObject || tokenStack.back() == ACCUPARSERList || tokenStack.back() == ACCUPARSERBase)) {
     tokenStack.pop_back();
   }
@@ -248,8 +241,8 @@ void AccuweatherParser::popAllKeys() {
 /*
  *  Parsers for specific endpoints
  */
-AccuweatherCurrentParser::AccuweatherCurrentParser(AccuweatherCurrentData* data_ptr_, bool isMetric_)
-  : AccuweatherParser(1, isMetric_) {
+AccuweatherCurrentParser::AccuweatherCurrentParser(WeatherApiCurrentData* data_ptr_)
+  : WeatherApiParser(1) {
   data_ptr = data_ptr_;
 }
 
@@ -297,8 +290,8 @@ void AccuweatherCurrentParser::value(String value) {
   popAllKeys();
 }
 
-AccuweatherHourlyParser::AccuweatherHourlyParser(AccuweatherHourlyData* data_ptr_, int maxListLength_)
-  : AccuweatherParser(maxListLength_) {
+AccuweatherHourlyParser::AccuweatherHourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_)
+  : WeatherApiParser(maxListLength_) {
   data_ptr = data_ptr_;
 }
 
@@ -359,7 +352,7 @@ void AccuweatherHourlyParser::value(String value) {
 }
 
 AccuweatherDailyParser::AccuweatherDailyParser(AccuweatherDailyData* data_ptr_, int maxListLength_)
-  : AccuweatherParser(maxListLength_) {
+  : WeatherApiParser(maxListLength_) {
   data_ptr = data_ptr_;
 }
 
@@ -508,17 +501,17 @@ void AccuweatherDailyParser::value(String value) {
 /*
  *  Data retrieval over HTTP
  */
-static const char currentURLTemplate[] PROGMEM = "http://dataservice.accuweather.com/currentconditions/v1/%d?apikey=%s&details=true&language=%s";
-int Accuweather::getCurrent(AccuweatherCurrentData* data_ptr) {
+static const char currentURLTemplate[] PROGMEM = "http://api.weatherapi.com/v1/forecast.json?key=%s&q=id:%d&days=1&aqi=no&alerts=no";
+int WeatherApi::getForecast(WeatherApiCurrentData* data_ptr) {
   char url[256];
-  snprintf_P(url, 256, currentURLTemplate, locationID, apiKey, languageID);
+  snprintf_P(url, 256, currentURLTemplate, apiKey, locationID);
   http.begin(client, url);
   int httpCode = http.GET();
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK) {
       length = http.getSize();
       parser.reset();
-      listener = new AccuweatherCurrentParser(data_ptr, isMetric);
+      listener = new AccuweatherCurrentParser(data_ptr);
       parser.setListener(listener);
       return 0;
     }
@@ -528,73 +521,7 @@ int Accuweather::getCurrent(AccuweatherCurrentData* data_ptr) {
   return httpCode;
 }
 
-static const char hourlyURLTemplate[] PROGMEM = "http://dataservice.accuweather.com/forecasts/v1/hourly/%dhour/%d?apikey=%s&details=true&metric=%s&language=%s";
-int Accuweather::getHourly(AccuweatherHourlyData* data_ptr, int hours) {
-  static const int possibleHours[] = { 120, 72, 24, 12, 1 };
-  int hoursToGet = possibleHours[0];
-  for (int i = 0; i < SIZE_OF_CONST_TABLE(possibleHours); i++) {
-    if (hours <= possibleHours[i]) {
-      hoursToGet = possibleHours[i];
-    } else {
-      break;
-    }
-  }
-
-  char url[256];
-  snprintf_P(url, 256, hourlyURLTemplate, hoursToGet, locationID, apiKey, (isMetric ? "true" : "false"), languageID);
-  http.begin(client, url);
-
-  int httpCode = http.GET();
-  if (httpCode > 0) {
-    if (httpCode == HTTP_CODE_OK) {
-      length = http.getSize();
-      parser.reset();
-      listener = new AccuweatherHourlyParser(data_ptr, hours);
-      parser.setListener(listener);
-      return 0;
-    }
-  }
-  //If we got here, we failed to get data
-  http.end();
-  return httpCode;
-}
-
-static const char dailyURLTemplate[] PROGMEM = "http://dataservice.accuweather.com/forecasts/v1/daily/%dday/%d?apikey=%s&details=true&metric=%s&language=%s";
-int Accuweather::getDaily(AccuweatherDailyData* data_ptr, int days) {
-  static const int possibleDays[] = { 15, 10, 5, 1 };
-  int daysToGet = possibleDays[0];
-  for (int i = 0; i < SIZE_OF_CONST_TABLE(possibleDays); i++) {
-    if (days <= possibleDays[i]) {
-      daysToGet = possibleDays[i];
-    } else {
-      break;
-    }
-  }
-
-  char url[256];
-  snprintf_P(url, 256, dailyURLTemplate, daysToGet, locationID, apiKey, (isMetric ? "true" : "false"), languageID);
-  http.begin(client, url);
-
-  int httpCode = http.GET();
-  if (httpCode > 0) {
-    if (httpCode == HTTP_CODE_OK) {
-      length = http.getSize();
-      parser.reset();
-      listener = new AccuweatherDailyParser(data_ptr, days);
-      parser.setListener(listener);
-      return 0;
-    }
-  }
-  //If we got here, we failed to get data
-  http.end();
-  return httpCode;
-}
-
-void Accuweather::changeApiKey(const char* apiKey_) {
-  apiKey = apiKey_;
-}
-
-void Accuweather::freeConnection() {
+void WeatherApi::freeConnection() {
   http.end();
   delete listener;
 }
@@ -605,7 +532,7 @@ void Accuweather::freeConnection() {
  *  This function should be called repeatedly until the returned value is 0.
  *  The function will close the connection and free resources automatically.
  */
-int Accuweather::continueDownload() {
+int WeatherApi::continueDownload() {
   // read all data from server
   if (http.connected() && (length > 0 || length == -1)) {
     // create buffer for read

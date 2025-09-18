@@ -7,15 +7,9 @@ const char* ssid_2 = "xxxx";              //your wifi_2 ssid
 const char* password_2 = "xxxx";          //your wifi_1 password
 
 //=========================================================================================================================================== accuweather keys
-const int ACU_MAX_KEYS = 0;               //number of accuweather keys
 
-const char acu_keys[][33] =               //your accuweather keys
-{
-  "key_1",
-  "key_2",
-  "key_3",
-  "key_4"
-};
+const char weatherapi_key[] = "xxx";
+
 //=========================================================================================================================================== airly configuration
 const char airly_key[] = "xxx";
 const char airly_longitude[] = "xx.xxxxxxxxxxxxx";	//longitude
