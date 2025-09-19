@@ -9,234 +9,187 @@
 #include <vector>
 #include <map>
 
-typedef struct{
-    String Name;
-}WeatherApiResponseLocation;
-
-//Structures for holding the received data
+// Structures for holding the received data
 typedef struct {
-    WeatherApiResponseLocation location;
-    String LocalObservationDateTime;
-    String UVIndexText;
-    String WeatherText;
-    float CloudCover;
-    float Pressure;
-    float RealFeelTemperature;
-    float RealFeelTemperatureShade;
-    float RelativeHumidity;
-    float Temperature;
-    float Visibility;
-    float WindGustSpeed;
-    float WindSpeed;
-    int EpochTime;
-    int16_t WindDirection;
-    uint8_t IsDayTime;
-    uint8_t UVIndex;
-    uint8_t WeatherIcon;
-}
-WeatherApiCurrentData;
+  String Name;
+} WeatherApiResponseLocation;
 
 typedef struct {
-    String DateTime;
-    String IconPhrase;
-    String UVIndexText;
-    float Ice;
-    float Rain;
-    float RealFeelTemperature;
-    float RelativeHumidity;
-    float Snow;
-    float Temperature;
-    float TotalLiquid;
-    float Visibility;
-    float WindGustSpeed;
-    float WindSpeed;
-    int EpochDateTime;
-    int16_t WindDirection;
-    uint8_t CloudCover;
-    uint8_t IceProbability;
-    uint8_t IsDaylight;
-    uint8_t PrecipitationProbability;
-    uint8_t RainProbability;
-    uint8_t SnowProbability;
-    uint8_t UVIndex;
-    uint8_t WeatherIcon;
-}
-WeatherApiHourlyData;
+  WeatherApiResponseLocation location;
+  String LocalTime;
+  String WeatherText;
+  float CloudCover;
+  float Pressure;
+  float FeelsLike;
+  float Humidity;
+  float Temperature;
+  float Visibility;
+  float UvIndex;
+  float WindGustSpeed;
+  float WindSpeed;
+  int EpochTime;
+  int16_t WindDirection;
+  uint16_t WeatherCode;
+} WeatherApiCurrentData;
 
 typedef struct {
-    String IconPhrase;
-    String LongPhrase;
-    float Ice;
-    float Rain;
-    float RelativeHumidity;
-    float Snow;
-    float TotalLiquid;
-    float Visibility;
-    float WindGustSpeed;
-    float WindSpeed;
-    int16_t WindDirection;
-    uint8_t CloudCover;
-    uint8_t IceProbability;
-    uint8_t PrecipitationProbability;
-    uint8_t RainProbability;
-    uint8_t SnowProbability;
-    uint8_t ThunderstormProbability;
-    uint8_t WeatherIcon;
-}
-AccuweatherForecastData;
+  String Time;
+  String WeatherText;
+  float FeelsLike;
+  float Gust;
+  float Humidity;
+  float Precip;
+  float Pressure;
+  float Temp;
+  float UvIndex;
+  float Visibility;
+  float WindDir;
+  float WindSpeed;
+  int TimeEpoch;
+  uint16_t WeatherCode;
+  uint8_t ChanceOfRain;
+  uint8_t Cloud;
+} WeatherApiHourlyData;
 
 typedef struct {
-    String Date;
-    float TempMin;
-    float TempMax;
-    float RealFeelTempMin;
-    float RealFeelTempMax;
-    float HoursOfSun;
-    int EpochDate;
-    int SunRise;
-    int SunSet;
-    AccuweatherForecastData Day;
-    AccuweatherForecastData Night;
-}
-AccuweatherDailyData;
+  String WeatherText;
+  float AvgHumidity;
+  float AvgVisKm;
+  float MaxTemp;
+  float MaxWindKph;
+  float MinTemp;
+  float TotalPrecipMm;
+  uint16_t WeatherCode;
+  uint8_t ChanceOfRain;
+} ForecastDayData;
 
-//Tokens for different keys that can be found in the JSON responses
-//To extend the functionality, first a new token should be added to the enum below,
-//then a mapping from String to that token in the map.
-enum AccuParserTokens_ {
-    ACCUPARSERUnknown,
-    ACCUPARSERBase,
-    ACCUPARSERList,
-    ACCUPARSERObject,
-    ACCUPARSERUnitPlaceholder,
-    ACCUPARSERCloudCover,
-    ACCUPARSERDateTime,
-    ACCUPARSERDay,
-    ACCUPARSERDegrees,
-    ACCUPARSERDirection,
-    ACCUPARSEREnglish,
-    ACCUPARSEREpochDateTime,
-    ACCUPARSEREpochRise,
-    ACCUPARSEREpochSet,
-    ACCUPARSEREpochTime,
-    ACCUPARSERHoursOfSun,
-    ACCUPARSERIce,
-    ACCUPARSERIceProbability,
-    ACCUPARSERIconPhrase,
-    ACCUPARSERImperial,
-    ACCUPARSERIsDaylight,
-    ACCUPARSERIsDayTime,
-    ACCUPARSERLocalObservationDateTime,
-    ACCUPARSERLongPhrase,
-    ACCUPARSERMaximum,
-    ACCUPARSERMetric,
-    ACCUPARSERMinimum,
-    ACCUPARSERMoon,
-    ACCUPARSERNight,
-    ACCUPARSERPrecip1hr,
-    ACCUPARSERPrecipitationProbability,
-    ACCUPARSERPressure,
-    ACCUPARSERRain,
-    ACCUPARSERRainProbability,
-    ACCUPARSERRealFeelTemperature,
-    ACCUPARSERRealFeelTemperatureShade,
-    ACCUPARSERRelativeHumidity,
-    ACCUPARSERShortPhrase,
-    ACCUPARSERSnow,
-    ACCUPARSERSnowProbability,
-    ACCUPARSERSpeed,
-    ACCUPARSERSun,
-    ACCUPARSERTemperature,
-    ACCUPARSERThunderstormProbability,
-    ACCUPARSERTotalLiquid,
-    ACCUPARSERUnit,
-    ACCUPARSERUVIndex,
-    ACCUPARSERUVIndexText,
-    ACCUPARSERValue,
-    ACCUPARSERVisibility,
-    ACCUPARSERWeatherIcon,
-    ACCUPARSERWeatherText,
-    ACCUPARSERWind,
-    ACCUPARSERWindGust,
-    ACCUPARSERDailyForecasts,
-    ACCUPARSERDate,
-    ACCUPARSEREpochDate,
-    ACCUPARSERIcon,
+typedef struct {
+  String Date;
+  int DateEpoch;
+  ForecastDayData Day;
+} WeatherApiDailyData;
+
+// Tokens for different keys that can be found in the JSON responses
+enum ParserTokens_ {
+  PARSERUnknown,
+  PARSERBase,
+  PARSERList,
+  PARSERObject,
+  // New tokens for WeatherAPI.com
+  PARSERlocation,
+  PARSERcurrent,
+  PARSERforecast,
+  PARSERforecastday,
+  PARSERday,
+  PARSERhour,
+  PARSERcondition,
+  PARSERname,
+  PARSERlocaltime,
+  PARSERlast_updated_epoch,
+  PARSERtemp_c,
+  PARSERfeelslike_c,
+  PARSERpressure_mb,
+  PARSERprecip_mm,
+  PARSERhumidity,
+  PARSERcloud,
+  PARSERwind_kph,
+  PARSERwind_degree,
+  PARSERgust_kph,
+  PARSERvis_km,
+  PARSERuv,
+  PARSERtext,
+  PARSERcode,
+  PARSERdate,
+  PARSERdate_epoch,
+  PARSERmaxtemp_c,
+  PARSERmintemp_c,
+  PARSERmaxwind_kph,
+  PARSERtotalprecip_mm,
+  PARSERavgvis_km,
+  PARSERavghumidity,
+  PARSERdaily_chance_of_rain,
+  PARSERtime,
+  PARSERtime_epoch,
+  PARSERchance_of_rain,
 };
 
-//I do this to save memory - by default enums are ints, so to save a bit of memory I use chars instead.
-//WARNING: change this if you will need more than 256 tokens
-typedef uint8_t AccuParserTokens;
+// I do this to save memory - by default enums are ints, so to save a bit of memory I use chars instead.
+// WARNING: change this if you will need more than 256 tokens
+typedef uint8_t ParserToken;
 
-//The parser creates a stack while parsing the JSON response. This allows a lot of flexibility when creating a parser (e.g. we can infer all previous keys and objects before a given value)
-//The stack contains tokens instead of strings. This greatly reduces memory usage and allows us to compare stack contents much quicker.
-class WeatherApiParser: public JsonListener {
-    public:
-        WeatherApiParser(int maxListLength_);
-        virtual void whitespace(char c);
-        virtual void key(String key);
-        virtual void value(String value);
-        virtual void startDocument();
-        virtual void endDocument();
-        virtual void startArray();
-        virtual void endArray();
-        virtual void startObject();
-        virtual void endObject();
+// The parser creates a stack while parsing the JSON response.
+class WeatherApiParser : public JsonListener {
+public:
+  WeatherApiParser(int maxListLength_);
+  virtual void whitespace(char c);
+  virtual void key(String key);
+  virtual void value(String value);
+  virtual void startDocument();
+  virtual void endDocument();
+  virtual void startArray();
+  virtual void endArray();
+  virtual void startObject();
+  virtual void endObject();
 
-    protected:
-        std::vector<AccuParserTokens> tokenStack;
-        void DEBUG_printStack();
-        bool stackSuffix(const AccuParserTokens suffix[], int suffix_len);
-        bool stackContains(const AccuParserTokens token);
-        void popAllKeys();
-        int baseListIdx = -1;
-        int maxListLength = INT_MAX;
-        bool listFull = false;
+protected:
+  std::vector<ParserToken> tokenStack;
+  void DEBUG_printStack();
+  bool stackSuffix(const ParserToken suffix[], int suffix_len);
+  bool stackContains(const ParserToken token);
+  void popAllKeys();
+  int baseListIdx = -1;
+  int maxListLength = INT_MAX;
+  bool listFull = false;
 };
 
-//Descendant classes for parsing particular types of responses
-class AccuweatherCurrentParser: public WeatherApiParser {
-    public:
-        AccuweatherCurrentParser(WeatherApiCurrentData* data_ptr_);
-        virtual void value(String value);
-    protected:
-        WeatherApiCurrentData* data_ptr;
+// Descendant classes for parsing particular types of responses
+class CurrentParser : public WeatherApiParser {
+public:
+  CurrentParser(WeatherApiCurrentData* data_ptr_);
+  virtual void value(String value);
+protected:
+  WeatherApiCurrentData* data_ptr;
 };
 
-class AccuweatherHourlyParser: public WeatherApiParser {
-    public:
-        AccuweatherHourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_);
-        virtual void value(String value);
-    protected:
-        WeatherApiHourlyData* data_ptr;
+class HourlyParser : public WeatherApiParser {
+public:
+  HourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_);
+  virtual void startObject();
+  virtual void value(String value);
+protected:
+  WeatherApiHourlyData* data_ptr;
 };
 
-class AccuweatherDailyParser: public WeatherApiParser {
-    public:
-        AccuweatherDailyParser(AccuweatherDailyData* data_ptr_, int maxListLength_);
-        virtual void startObject();
-        virtual void value(String value);
-    protected:
-        AccuweatherDailyData* data_ptr;
+class DailyParser : public WeatherApiParser {
+public:
+  DailyParser(WeatherApiDailyData* data_ptr_, int maxListLength_);
+  virtual void startObject();
+  virtual void value(String value);
+protected:
+  WeatherApiDailyData* data_ptr;
 };
 
-//Main class for sending requests and parsing responses
+// Main class for sending requests and parsing responses
 class WeatherApi {
 public:
-    WiFiClient client;
-    HTTPClient http;
-    JsonStreamingParser parser;
-    WeatherApiParser* listener = NULL;
-    const int locationID;
-    const char* apiKey;
-    int length;
+  WiFiClient client;
+  HTTPClient http;
+  JsonStreamingParser parser;
+  WeatherApiParser* listener = NULL;
+  const int locationID;
+  const char* apiKey;
+  int length;
 
-    WeatherApi(const char* apiKey_, const int locationID_):
-        locationID(locationID_),
-        apiKey(apiKey_){
-    }
+  WeatherApi(const char* apiKey_, const int locationID_)
+    : locationID(locationID_),
+      apiKey(apiKey_) {
+  }
 
-    int getForecast(WeatherApiCurrentData* data_ptr);
-    int continueDownload();
-    void freeConnection();
+  // This function is now adapted to get current weather
+  int getForecast(WeatherApiCurrentData* data_ptr);
+  // You would create similar functions for daily/hourly forecasts
+  // e.g. int getDailyForecast(WeatherApiDailyData* data_ptr, int days);
+
+  int continueDownload();
+  void freeConnection();
 };

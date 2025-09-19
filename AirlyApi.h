@@ -20,47 +20,47 @@
 
 
 
-class AirlyApi: public JsonListener {
-  public:
-    AirlyApi (const char* apiKey, const char* lat, const char* lng, int distance);
-    bool getSensorValues(int locationId);
-    bool getNearestSensor();
+class AirlyApi : public JsonListener {
+public:
+  AirlyApi(const char* apiKey, const char* lat, const char* lng, int distance);
+  bool getSensorValues(int locationId);
+  bool getNearestSensor();
 
-    int getLocationId();
-    float getAirQualityIndex();
-    String getAirQualityLevel();
+  int getLocationId();
+  float getAirQualityIndex();
+  String getAirQualityLevel();
 
-  private:
-    bool doUpdate(String url);
-    const char* _apiKey;
-    const char* _lat;
-    const char* _lng;
-    int _distance;
-    String currentKey;
-    String currentParent = "";
+private:
+  bool doUpdate(String url);
+  const char* _apiKey;
+  const char* _lat;
+  const char* _lng;
+  int _distance;
+  String currentKey;
+  String currentParent = "";
 
-    int locationId;
-    float airQualityIndex;
-    String airQualityLevel;
+  int locationId;
+  float airQualityIndex;
+  String airQualityLevel;
 
-    WiFiClient client;
-    HTTPClient http;
+  WiFiClient client;
+  HTTPClient http;
 
-    virtual void whitespace(char c);
+  virtual void whitespace(char c);
 
-    virtual void startDocument();
+  virtual void startDocument();
 
-    virtual void key(String key);
+  virtual void key(String key);
 
-    virtual void value(String value);
+  virtual void value(String value);
 
-    virtual void endArray();
+  virtual void endArray();
 
-    virtual void endObject();
+  virtual void endObject();
 
-    virtual void endDocument();
+  virtual void endDocument();
 
-    virtual void startArray();
+  virtual void startArray();
 
-    virtual void startObject();
+  virtual void startObject();
 };

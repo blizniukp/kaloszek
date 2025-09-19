@@ -3,137 +3,114 @@
 
 #define SIZE_OF_CONST_TABLE(x) sizeof(x) / sizeof(x[0])
 #define STACK_HAS_SUFFIX(x) stackSuffix(x, SIZE_OF_CONST_TABLE(x))
+
 /*
- *  Parser constants
+ * Parser constants
  */
-//A map to transform strings into tokens
-static const std::map<const String, const AccuParserTokens> stringToTokenMap = {
-  { "CloudCover", ACCUPARSERCloudCover },
-  { "DailyForecasts", ACCUPARSERDailyForecasts },
-  { "Date", ACCUPARSERDate },
-  { "DateTime", ACCUPARSERDateTime },
-  { "Day", ACCUPARSERDay },
-  { "Degrees", ACCUPARSERDegrees },
-  { "Direction", ACCUPARSERDirection },
-  { "English", ACCUPARSEREnglish },
-  { "EpochDate", ACCUPARSEREpochDate },
-  { "EpochDateTime", ACCUPARSEREpochDateTime },
-  { "EpochRise", ACCUPARSEREpochRise },
-  { "EpochSet", ACCUPARSEREpochSet },
-  { "EpochTime", ACCUPARSEREpochTime },
-  { "HoursOfSun", ACCUPARSERHoursOfSun },
-  { "Ice", ACCUPARSERIce },
-  { "IceProbability", ACCUPARSERIceProbability },
-  { "Icon", ACCUPARSERIcon },
-  { "IconPhrase", ACCUPARSERIconPhrase },
-  { "Imperial", ACCUPARSERImperial },
-  { "IsDaylight", ACCUPARSERIsDaylight },
-  { "IsDayTime", ACCUPARSERIsDayTime },
-  { "LocalObservationDateTime", ACCUPARSERLocalObservationDateTime },
-  { "LongPhrase", ACCUPARSERLongPhrase },
-  { "Maximum", ACCUPARSERMaximum },
-  { "Metric", ACCUPARSERMetric },
-  { "Minimum", ACCUPARSERMinimum },
-  { "Moon", ACCUPARSERMoon },
-  { "Night", ACCUPARSERNight },
-  { "Precip1hr", ACCUPARSERPrecip1hr },
-  { "PrecipitationProbability", ACCUPARSERPrecipitationProbability },
-  { "Pressure", ACCUPARSERPressure },
-  { "Rain", ACCUPARSERRain },
-  { "RainProbability", ACCUPARSERRainProbability },
-  { "RealFeelTemperature", ACCUPARSERRealFeelTemperature },
-  { "RealFeelTemperatureShade", ACCUPARSERRealFeelTemperatureShade },
-  { "RelativeHumidity", ACCUPARSERRelativeHumidity },
-  { "ShortPhrase", ACCUPARSERShortPhrase },
-  { "Snow", ACCUPARSERSnow },
-  { "SnowProbability", ACCUPARSERSnowProbability },
-  { "Speed", ACCUPARSERSpeed },
-  { "Sun", ACCUPARSERSun },
-  { "Temperature", ACCUPARSERTemperature },
-  { "ThunderstormProbability", ACCUPARSERThunderstormProbability },
-  { "TotalLiquid", ACCUPARSERTotalLiquid },
-  { "Unit", ACCUPARSERUnit },
-  { "UVIndex", ACCUPARSERUVIndex },
-  { "UVIndexText", ACCUPARSERUVIndexText },
-  { "Value", ACCUPARSERValue },
-  { "Visibility", ACCUPARSERVisibility },
-  { "WeatherIcon", ACCUPARSERWeatherIcon },
-  { "WeatherText", ACCUPARSERWeatherText },
-  { "Wind", ACCUPARSERWind },
-  { "WindGust", ACCUPARSERWindGust },
+// A map to transform strings into tokens
+static const std::map<const String, const ParserToken> stringToTokenMap = {
+  { "location", PARSERlocation },
+  { "current", PARSERcurrent },
+  { "forecast", PARSERforecast },
+  { "forecastday", PARSERforecastday },
+  { "day", PARSERday },
+  { "hour", PARSERhour },
+  { "condition", PARSERcondition },
+  { "name", PARSERname },
+  { "localtime", PARSERlocaltime },
+  { "last_updated_epoch", PARSERlast_updated_epoch },
+  { "temp_c", PARSERtemp_c },
+  { "feelslike_c", PARSERfeelslike_c },
+  { "pressure_mb", PARSERpressure_mb },
+  { "precip_mm", PARSERprecip_mm },
+  { "humidity", PARSERhumidity },
+  { "cloud", PARSERcloud },
+  { "wind_kph", PARSERwind_kph },
+  { "wind_degree", PARSERwind_degree },
+  { "gust_kph", PARSERgust_kph },
+  { "vis_km", PARSERvis_km },
+  { "uv", PARSERuv },
+  { "text", PARSERtext },
+  { "code", PARSERcode },
+  { "date", PARSERdate },
+  { "date_epoch", PARSERdate_epoch },
+  { "maxtemp_c", PARSERmaxtemp_c },
+  { "mintemp_c", PARSERmintemp_c },
+  { "maxwind_kph", PARSERmaxwind_kph },
+  { "totalprecip_mm", PARSERtotalprecip_mm },
+  { "avgvis_km", PARSERavgvis_km },
+  { "avghumidity", PARSERavghumidity },
+  { "daily_chance_of_rain", PARSERdaily_chance_of_rain },
+  { "time", PARSERtime },
+  { "time_epoch", PARSERtime_epoch },
+  { "chance_of_rain", PARSERchance_of_rain },
 };
 
-//Arrays of stack suffixes - if the stack has this suffix, this means that this piece of data can be obtained
-static const AccuParserTokens LocalObservationDateTime_suffix[] = { ACCUPARSERLocalObservationDateTime };
-static const AccuParserTokens DateTime_suffix[] = { ACCUPARSERDateTime };
-static const AccuParserTokens EpochTime_suffix[] = { ACCUPARSEREpochTime };
-static const AccuParserTokens EpochDateTime_suffix[] = { ACCUPARSEREpochDateTime };
-static const AccuParserTokens Date_suffix[] = { ACCUPARSERDate };
-static const AccuParserTokens EpochDate_suffix[] = { ACCUPARSEREpochDate };
-static const AccuParserTokens HoursOfSun_suffix[] = { ACCUPARSERHoursOfSun };
-static const AccuParserTokens WeatherText_suffix[] = { ACCUPARSERWeatherText };
-static const AccuParserTokens WeatherIcon_suffix[] = { ACCUPARSERWeatherIcon };
-static const AccuParserTokens Icon_suffix[] = { ACCUPARSERIcon };
-static const AccuParserTokens IconPhrase_suffix[] = { ACCUPARSERIconPhrase };
-static const AccuParserTokens LongPhrase_suffix[] = { ACCUPARSERLongPhrase };
-static const AccuParserTokens IsDayTime_suffix[] = { ACCUPARSEREpochTime };
-static const AccuParserTokens IsDaylight_suffix[] = { ACCUPARSERIsDaylight };
-static const AccuParserTokens RelativeHumidity_suffix[] = { ACCUPARSERRelativeHumidity };
-static const AccuParserTokens WindDirection_suffix[] = { ACCUPARSERWind, ACCUPARSERObject, ACCUPARSERDirection, ACCUPARSERObject, ACCUPARSERDegrees };
-static const AccuParserTokens UVIndex_suffix[] = { ACCUPARSERUVIndex };
-static const AccuParserTokens UVIndexText_suffix[] = { ACCUPARSERUVIndexText };
-static const AccuParserTokens CloudCover_suffix[] = { ACCUPARSERCloudCover };
+// Arrays of stack suffixes for the CURRENT weather section
+static const ParserToken location_name_suffix[] = { PARSERlocation, PARSERObject, PARSERname };
+static const ParserToken location_localtime_suffix[] = { PARSERlocation, PARSERObject, PARSERlocaltime };
+static const ParserToken current_last_updated_epoch_suffix[] = { PARSERcurrent, PARSERObject, PARSERlast_updated_epoch };
+static const ParserToken current_temp_c_suffix[] = { PARSERcurrent, PARSERObject, PARSERtemp_c };
+static const ParserToken current_condition_text_suffix[] = { PARSERcurrent, PARSERObject, PARSERcondition, PARSERObject, PARSERtext };
+static const ParserToken current_condition_code_suffix[] = { PARSERcurrent, PARSERObject, PARSERcondition, PARSERObject, PARSERcode };
+static const ParserToken current_wind_kph_suffix[] = { PARSERcurrent, PARSERObject, PARSERwind_kph };
+static const ParserToken current_wind_degree_suffix[] = { PARSERcurrent, PARSERObject, PARSERwind_degree };
+static const ParserToken current_pressure_mb_suffix[] = { PARSERcurrent, PARSERObject, PARSERpressure_mb };
+static const ParserToken current_humidity_suffix[] = { PARSERcurrent, PARSERObject, PARSERhumidity };
+static const ParserToken current_cloud_suffix[] = { PARSERcurrent, PARSERObject, PARSERcloud };
+static const ParserToken current_feelslike_c_suffix[] = { PARSERcurrent, PARSERObject, PARSERfeelslike_c };
+static const ParserToken current_vis_km_suffix[] = { PARSERcurrent, PARSERObject, PARSERvis_km };
+static const ParserToken current_uv_suffix[] = { PARSERcurrent, PARSERObject, PARSERuv };
+static const ParserToken current_gust_kph_suffix[] = { PARSERcurrent, PARSERObject, PARSERgust_kph };
 
-static const AccuParserTokens UnitTemperature_suffix[] = { ACCUPARSERTemperature, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens RealFeelUnitTemperature_suffix[] = { ACCUPARSERRealFeelTemperature, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens RealFeelUnitTemperatureShade_suffix[] = { ACCUPARSERRealFeelTemperatureShade, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens WindUnitSpeed_suffix[] = { ACCUPARSERWind, ACCUPARSERObject, ACCUPARSERSpeed, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens WindGustUnitSpeed_suffix[] = { ACCUPARSERWindGust, ACCUPARSERObject, ACCUPARSERSpeed, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens UnitPressure_suffix[] = { ACCUPARSERPressure, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens UnitVisibility_suffix[] = { ACCUPARSERVisibility, ACCUPARSERObject, ACCUPARSERUnitPlaceholder, ACCUPARSERObject, ACCUPARSERValue };
+// Suffixes for DAILY forecast section
+static const ParserToken daily_date_suffix[] = { PARSERdate };
+static const ParserToken daily_date_epoch_suffix[] = { PARSERdate_epoch };
+static const ParserToken daily_maxtemp_c_suffix[] = { PARSERday, PARSERObject, PARSERmaxtemp_c };
+static const ParserToken daily_mintemp_c_suffix[] = { PARSERday, PARSERObject, PARSERmintemp_c };
+static const ParserToken daily_maxwind_kph_suffix[] = { PARSERday, PARSERObject, PARSERmaxwind_kph };
+static const ParserToken daily_totalprecip_mm_suffix[] = { PARSERday, PARSERObject, PARSERtotalprecip_mm };
+static const ParserToken daily_avgvis_km_suffix[] = { PARSERday, PARSERObject, PARSERavgvis_km };
+static const ParserToken daily_avghumidity_suffix[] = { PARSERday, PARSERObject, PARSERavghumidity };
+static const ParserToken daily_chance_of_rain_suffix[] = { PARSERday, PARSERObject, PARSERdaily_chance_of_rain };
+static const ParserToken daily_condition_text_suffix[] = { PARSERday, PARSERObject, PARSERcondition, PARSERObject, PARSERtext };
+static const ParserToken daily_condition_code_suffix[] = { PARSERday, PARSERObject, PARSERcondition, PARSERObject, PARSERcode };
 
-static const AccuParserTokens Temperature_suffix[] = { ACCUPARSERTemperature, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens RealFeelTemperature_suffix[] = { ACCUPARSERRealFeelTemperature, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens RealFeelTemperatureShade_suffix[] = { ACCUPARSERRealFeelTemperatureShade, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens WindSpeed_suffix[] = { ACCUPARSERWind, ACCUPARSERObject, ACCUPARSERSpeed, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens WindGustSpeed_suffix[] = { ACCUPARSERWindGust, ACCUPARSERObject, ACCUPARSERSpeed, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens Pressure_suffix[] = { ACCUPARSERPressure, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens Visibility_suffix[] = { ACCUPARSERVisibility, ACCUPARSERObject, ACCUPARSERValue };
+// Suffixes for HOURLY forecast section
+static const ParserToken hourly_time_epoch_suffix[] = { PARSERtime_epoch };
+static const ParserToken hourly_time_suffix[] = { PARSERtime };
+static const ParserToken hourly_temp_c_suffix[] = { PARSERtemp_c };
+static const ParserToken hourly_condition_text_suffix[] = { PARSERcondition, PARSERObject, PARSERtext };
+static const ParserToken hourly_condition_code_suffix[] = { PARSERcondition, PARSERObject, PARSERcode };
+static const ParserToken hourly_wind_kph_suffix[] = { PARSERwind_kph };
+static const ParserToken hourly_wind_degree_suffix[] = { PARSERwind_degree };
+static const ParserToken hourly_pressure_mb_suffix[] = { PARSERpressure_mb };
+static const ParserToken hourly_precip_mm_suffix[] = { PARSERprecip_mm };
+static const ParserToken hourly_humidity_suffix[] = { PARSERhumidity };
+static const ParserToken hourly_cloud_suffix[] = { PARSERcloud };
+static const ParserToken hourly_feelslike_c_suffix[] = { PARSERfeelslike_c };
+static const ParserToken hourly_vis_km_suffix[] = { PARSERvis_km };
+static const ParserToken hourly_gust_kph_suffix[] = { PARSERgust_kph };
+static const ParserToken hourly_uv_suffix[] = { PARSERuv };
+static const ParserToken hourly_chance_of_rain_suffix[] = { PARSERchance_of_rain };
 
-static const AccuParserTokens TempMin_suffix[] = { ACCUPARSERTemperature, ACCUPARSERObject, ACCUPARSERMinimum, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens RealFeelTempMin_suffix[] = { ACCUPARSERRealFeelTemperature, ACCUPARSERObject, ACCUPARSERMinimum, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens TempMax_suffix[] = { ACCUPARSERTemperature, ACCUPARSERObject, ACCUPARSERMaximum, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens RealFeelTempMax_suffix[] = { ACCUPARSERRealFeelTemperature, ACCUPARSERObject, ACCUPARSERMaximum, ACCUPARSERObject, ACCUPARSERValue };
-
-static const AccuParserTokens SunRise_suffix[] = { ACCUPARSERSun, ACCUPARSERObject, ACCUPARSEREpochRise };
-static const AccuParserTokens SunSet_suffix[] = { ACCUPARSERSun, ACCUPARSERObject, ACCUPARSEREpochSet };
-
-static const AccuParserTokens PrecipitationProbability_suffix[] = { ACCUPARSERPrecipitationProbability };
-static const AccuParserTokens ThunderstormProbability_suffix[] = { ACCUPARSERThunderstormProbability };
-static const AccuParserTokens RainProbability_suffix[] = { ACCUPARSERRainProbability };
-static const AccuParserTokens SnowProbability_suffix[] = { ACCUPARSERSnowProbability };
-static const AccuParserTokens IceProbability_suffix[] = { ACCUPARSERIceProbability };
-static const AccuParserTokens TotalLiquid_suffix[] = { ACCUPARSERTotalLiquid, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens Rain_suffix[] = { ACCUPARSERRain, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens Snow_suffix[] = { ACCUPARSERSnow, ACCUPARSERObject, ACCUPARSERValue };
-static const AccuParserTokens Ice_suffix[] = { ACCUPARSERIce, ACCUPARSERObject, ACCUPARSERValue };
-
-static const AccuParserTokens baseList_suffix[] = { ACCUPARSERBase, ACCUPARSERList, ACCUPARSERObject };
-static const AccuParserTokens dailyForecastsList_suffix[] = { ACCUPARSERBase, ACCUPARSERObject, ACCUPARSERDailyForecasts, ACCUPARSERList, ACCUPARSERObject };
+// Suffixes for identifying lists
+static const ParserToken forecastdayList_suffix[] = { PARSERBase, PARSERObject, PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject };
+static const ParserToken hourList_suffix[] = { PARSERforecastday, PARSERList, PARSERObject, PARSERhour, PARSERList, PARSERObject };
 
 /*
- *  Parser base class
+ * Parser base class
  */
 WeatherApiParser::WeatherApiParser(int maxListLength_) {
   maxListLength = maxListLength_;
 }
 
 void WeatherApiParser::startDocument() {
-  tokenStack.push_back(ACCUPARSERBase);
+  tokenStack.push_back(PARSERBase);
 }
 
 void WeatherApiParser::endDocument() {
-  if (tokenStack.back() != ACCUPARSERBase) {
+  if (tokenStack.back() != PARSERBase) {
     Serial.println(F("ERROR: Document token not found"));
   }
   popAllKeys();
@@ -147,7 +124,7 @@ void WeatherApiParser::key(String key) {
   if (it != stringToTokenMap.end()) {
     tokenStack.push_back(it->second);
   } else {
-    tokenStack.push_back(ACCUPARSERUnknown);
+    tokenStack.push_back(PARSERUnknown);
   }
 }
 
@@ -155,16 +132,16 @@ void WeatherApiParser::value(String value) {
   if (baseListIdx >= maxListLength) {
     return;
   }
-  Serial.println("value: " + value);
+  // This base function does nothing, it's overridden by child classes
   popAllKeys();
 }
 
 void WeatherApiParser::startArray() {
-  tokenStack.push_back(ACCUPARSERList);
+  tokenStack.push_back(PARSERList);
 }
 
 void WeatherApiParser::endArray() {
-  if (tokenStack.back() != ACCUPARSERList) {
+  if (tokenStack.back() != PARSERList) {
     Serial.println(F("ERROR: List token not found"));
   }
   tokenStack.pop_back();
@@ -173,14 +150,11 @@ void WeatherApiParser::endArray() {
 }
 
 void WeatherApiParser::startObject() {
-  tokenStack.push_back(ACCUPARSERObject);
-  if (STACK_HAS_SUFFIX(baseList_suffix)) {
-    baseListIdx++;
-  }
+  tokenStack.push_back(PARSERObject);
 }
 
 void WeatherApiParser::endObject() {
-  if (tokenStack.back() != ACCUPARSERObject) {
+  if (tokenStack.back() != PARSERObject) {
     Serial.println(F("ERROR: Object token not found"));
   }
   tokenStack.pop_back();
@@ -192,7 +166,7 @@ void WeatherApiParser::whitespace(char c) {
   //ignore
 }
 
-//Some housekeeping functions
+//Housekeeping functions
 void WeatherApiParser::DEBUG_printStack() {
   for (auto it = tokenStack.begin(); it != tokenStack.end(); ++it) {
     Serial.print(">");
@@ -201,7 +175,7 @@ void WeatherApiParser::DEBUG_printStack() {
   Serial.println("*");
 }
 
-bool WeatherApiParser::stackSuffix(const AccuParserTokens suffix[], int suffix_len) {
+bool WeatherApiParser::stackSuffix(const ParserToken suffix[], int suffix_len) {
   int stackSize = tokenStack.size();
   if (stackSize < suffix_len) {
     return false;
@@ -209,23 +183,11 @@ bool WeatherApiParser::stackSuffix(const AccuParserTokens suffix[], int suffix_l
   if (suffix_len == 0) {
     return true;
   }
-  do {
-    stackSize--;
-    suffix_len--;
-    if (tokenStack[stackSize] != suffix[suffix_len]) {
-      if (suffix[suffix_len] == ACCUPARSERUnitPlaceholder) {
-          if (tokenStack[stackSize] != ACCUPARSERMetric) {
-            return false;
-          }
-      } else {
-        return false;
-      }
-    }
-  } while (stackSize > 0 && suffix_len > 0);
-  return true;
+  // Compare the end of the stack with the suffix
+  return std::equal(tokenStack.end() - suffix_len, tokenStack.end(), suffix);
 }
 
-bool WeatherApiParser::stackContains(const AccuParserTokens token) {
+bool WeatherApiParser::stackContains(const ParserToken token) {
   for (auto it = tokenStack.rbegin(); it != tokenStack.rend(); it++)
     if (*it == token)
       return true;
@@ -233,290 +195,193 @@ bool WeatherApiParser::stackContains(const AccuParserTokens token) {
 }
 
 void WeatherApiParser::popAllKeys() {
-  while (!(tokenStack.back() == ACCUPARSERObject || tokenStack.back() == ACCUPARSERList || tokenStack.back() == ACCUPARSERBase)) {
+  while (!(tokenStack.back() == PARSERObject || tokenStack.back() == PARSERList || tokenStack.back() == PARSERBase)) {
     tokenStack.pop_back();
   }
 }
 
 /*
- *  Parsers for specific endpoints
+ * Parsers for specific endpoints
  */
-AccuweatherCurrentParser::AccuweatherCurrentParser(WeatherApiCurrentData* data_ptr_)
+CurrentParser::CurrentParser(WeatherApiCurrentData* data_ptr_)
   : WeatherApiParser(1) {
   data_ptr = data_ptr_;
 }
 
-void AccuweatherCurrentParser::value(String value) {
-  if (baseListIdx >= maxListLength) {
+void CurrentParser::value(String value) {
+  // Only parse location and current sections
+  if (!stackContains(PARSERlocation) && !stackContains(PARSERcurrent)) {
+    popAllKeys();
     return;
   }
 
-  if (STACK_HAS_SUFFIX(LocalObservationDateTime_suffix)) {
-    data_ptr->LocalObservationDateTime = value;
-  } else if (STACK_HAS_SUFFIX(EpochTime_suffix)) {
+  if (STACK_HAS_SUFFIX(location_name_suffix)) {
+    data_ptr->location.Name = value;
+  } else if (STACK_HAS_SUFFIX(location_localtime_suffix)) {
+    data_ptr->LocalTime = value;
+  } else if (STACK_HAS_SUFFIX(current_last_updated_epoch_suffix)) {
     data_ptr->EpochTime = value.toInt();
-  } else if (STACK_HAS_SUFFIX(WeatherText_suffix)) {
-    data_ptr->WeatherText = value;
-  } else if (STACK_HAS_SUFFIX(WeatherIcon_suffix)) {
-    data_ptr->WeatherIcon = value.toInt();
-  } else if (STACK_HAS_SUFFIX(IsDayTime_suffix)) {
-    data_ptr->IsDayTime = value == "true";
-  } else if (STACK_HAS_SUFFIX(UnitTemperature_suffix)) {
+  } else if (STACK_HAS_SUFFIX(current_temp_c_suffix)) {
     data_ptr->Temperature = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RealFeelUnitTemperature_suffix)) {
-    data_ptr->RealFeelTemperature = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RealFeelUnitTemperatureShade_suffix)) {
-    data_ptr->RealFeelTemperatureShade = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RelativeHumidity_suffix)) {
-    data_ptr->RelativeHumidity = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(WindDirection_suffix)) {
-    data_ptr->WindDirection = value.toInt();
-  } else if (STACK_HAS_SUFFIX(WindUnitSpeed_suffix)) {
+  } else if (STACK_HAS_SUFFIX(current_condition_text_suffix)) {
+    data_ptr->WeatherText = value;
+  } else if (STACK_HAS_SUFFIX(current_condition_code_suffix)) {
+    data_ptr->WeatherCode = value.toInt();
+  } else if (STACK_HAS_SUFFIX(current_wind_kph_suffix)) {
     data_ptr->WindSpeed = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(WindGustUnitSpeed_suffix)) {
-    data_ptr->WindGustSpeed = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(UVIndex_suffix)) {
-    data_ptr->UVIndex = value.toInt();
-  } else if (STACK_HAS_SUFFIX(UVIndexText_suffix)) {
-    data_ptr->UVIndexText = value;
-  } else if (STACK_HAS_SUFFIX(UnitVisibility_suffix)) {
-    data_ptr->Visibility = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(CloudCover_suffix)) {
-    data_ptr->CloudCover = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(UnitPressure_suffix)) {
+  } else if (STACK_HAS_SUFFIX(current_wind_degree_suffix)) {
+    data_ptr->WindDirection = value.toInt();
+  } else if (STACK_HAS_SUFFIX(current_pressure_mb_suffix)) {
     data_ptr->Pressure = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(current_humidity_suffix)) {
+    data_ptr->Humidity = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(current_cloud_suffix)) {
+    data_ptr->CloudCover = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(current_feelslike_c_suffix)) {
+    data_ptr->FeelsLike = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(current_vis_km_suffix)) {
+    data_ptr->Visibility = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(current_uv_suffix)) {
+    data_ptr->UvIndex = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(current_gust_kph_suffix)) {
+    data_ptr->WindGustSpeed = value.toFloat();
   }
 
   popAllKeys();
 }
 
-AccuweatherHourlyParser::AccuweatherHourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_)
+HourlyParser::HourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_)
   : WeatherApiParser(maxListLength_) {
   data_ptr = data_ptr_;
 }
 
-void AccuweatherHourlyParser::value(String value) {
-  if (baseListIdx >= maxListLength) {
-    return;
-  }
-
-  if (STACK_HAS_SUFFIX(DateTime_suffix)) {
-    data_ptr[baseListIdx].DateTime = value;
-  } else if (STACK_HAS_SUFFIX(EpochDateTime_suffix)) {
-    data_ptr[baseListIdx].EpochDateTime = value.toInt();
-  } else if (STACK_HAS_SUFFIX(WeatherIcon_suffix)) {
-    data_ptr[baseListIdx].WeatherIcon = value.toInt();
-  } else if (STACK_HAS_SUFFIX(IconPhrase_suffix)) {
-    data_ptr[baseListIdx].IconPhrase = value;
-  } else if (STACK_HAS_SUFFIX(IsDaylight_suffix)) {
-    data_ptr[baseListIdx].IsDaylight = value == "true";
-  } else if (STACK_HAS_SUFFIX(Temperature_suffix)) {
-    data_ptr[baseListIdx].Temperature = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RealFeelTemperature_suffix)) {
-    data_ptr[baseListIdx].RealFeelTemperature = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(WindSpeed_suffix)) {
-    data_ptr[baseListIdx].WindSpeed = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(WindDirection_suffix)) {
-    data_ptr[baseListIdx].WindDirection = value.toInt();
-  } else if (STACK_HAS_SUFFIX(WindGustSpeed_suffix)) {
-    data_ptr[baseListIdx].WindGustSpeed = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RelativeHumidity_suffix)) {
-    data_ptr[baseListIdx].RelativeHumidity = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(Visibility_suffix)) {
-    data_ptr[baseListIdx].Visibility = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(UVIndex_suffix)) {
-    data_ptr[baseListIdx].UVIndex = value.toInt();
-  } else if (STACK_HAS_SUFFIX(UVIndexText_suffix)) {
-    data_ptr[baseListIdx].UVIndexText = value;
-  } else if (STACK_HAS_SUFFIX(PrecipitationProbability_suffix)) {
-    data_ptr[baseListIdx].PrecipitationProbability = value.toInt();
-  } else if (STACK_HAS_SUFFIX(RainProbability_suffix)) {
-    data_ptr[baseListIdx].RainProbability = value.toInt();
-  } else if (STACK_HAS_SUFFIX(SnowProbability_suffix)) {
-    data_ptr[baseListIdx].SnowProbability = value.toInt();
-  } else if (STACK_HAS_SUFFIX(IceProbability_suffix)) {
-    data_ptr[baseListIdx].IceProbability = value.toInt();
-  } else if (STACK_HAS_SUFFIX(TotalLiquid_suffix)) {
-    data_ptr[baseListIdx].TotalLiquid = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(Rain_suffix)) {
-    data_ptr[baseListIdx].Rain = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(Snow_suffix)) {
-    data_ptr[baseListIdx].Snow = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(Ice_suffix)) {
-    data_ptr[baseListIdx].Ice = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(CloudCover_suffix)) {
-    data_ptr[baseListIdx].CloudCover = value.toInt();
-  }
-
-  popAllKeys();
-}
-
-AccuweatherDailyParser::AccuweatherDailyParser(AccuweatherDailyData* data_ptr_, int maxListLength_)
-  : WeatherApiParser(maxListLength_) {
-  data_ptr = data_ptr_;
-}
-
-void AccuweatherDailyParser::startObject() {
-  tokenStack.push_back(ACCUPARSERObject);
-  if (STACK_HAS_SUFFIX(dailyForecastsList_suffix)) {
+void HourlyParser::startObject() {
+  tokenStack.push_back(PARSERObject);
+  // Increment index when entering a new object in the 'hour' list
+  if (STACK_HAS_SUFFIX(hourList_suffix)) {
     baseListIdx++;
   }
 }
 
-void AccuweatherDailyParser::value(String value) {
+void HourlyParser::value(String value) {
   if (baseListIdx >= maxListLength) {
     return;
   }
+  // We only care about values inside the 'hour' list
+  if (!stackContains(PARSERhour)) {
+    popAllKeys();
+    return;
+  }
 
-  if (STACK_HAS_SUFFIX(Date_suffix)) {
+  if (STACK_HAS_SUFFIX(hourly_time_epoch_suffix)) {
+    data_ptr[baseListIdx].TimeEpoch = value.toInt();
+  } else if (STACK_HAS_SUFFIX(hourly_time_suffix)) {
+    data_ptr[baseListIdx].Time = value;
+  } else if (STACK_HAS_SUFFIX(hourly_temp_c_suffix)) {
+    data_ptr[baseListIdx].Temp = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_condition_text_suffix)) {
+    data_ptr[baseListIdx].WeatherText = value;
+  } else if (STACK_HAS_SUFFIX(hourly_condition_code_suffix)) {
+    data_ptr[baseListIdx].WeatherCode = value.toInt();
+  } else if (STACK_HAS_SUFFIX(hourly_wind_kph_suffix)) {
+    data_ptr[baseListIdx].WindSpeed = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_wind_degree_suffix)) {
+    data_ptr[baseListIdx].WindDir = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_pressure_mb_suffix)) {
+    data_ptr[baseListIdx].Pressure = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_precip_mm_suffix)) {
+    data_ptr[baseListIdx].Precip = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_humidity_suffix)) {
+    data_ptr[baseListIdx].Humidity = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_cloud_suffix)) {
+    data_ptr[baseListIdx].Cloud = value.toInt();
+  } else if (STACK_HAS_SUFFIX(hourly_feelslike_c_suffix)) {
+    data_ptr[baseListIdx].FeelsLike = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_vis_km_suffix)) {
+    data_ptr[baseListIdx].Visibility = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_gust_kph_suffix)) {
+    data_ptr[baseListIdx].Gust = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_uv_suffix)) {
+    data_ptr[baseListIdx].UvIndex = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(hourly_chance_of_rain_suffix)) {
+    data_ptr[baseListIdx].ChanceOfRain = value.toInt();
+  }
+
+  popAllKeys();
+}
+
+
+DailyParser::DailyParser(WeatherApiDailyData* data_ptr_, int maxListLength_)
+  : WeatherApiParser(maxListLength_) {
+  data_ptr = data_ptr_;
+}
+
+void DailyParser::startObject() {
+  tokenStack.push_back(PARSERObject);
+  // Increment index when entering a new object in the 'forecastday' list
+  if (STACK_HAS_SUFFIX(forecastdayList_suffix)) {
+    baseListIdx++;
+  }
+}
+
+void DailyParser::value(String value) {
+  if (baseListIdx >= maxListLength) {
+    return;
+  }
+  // We only care about values inside the 'forecastday' list
+  if (!stackContains(PARSERforecastday)) {
+    popAllKeys();
+    return;
+  }
+
+  if (STACK_HAS_SUFFIX(daily_date_suffix)) {
     data_ptr[baseListIdx].Date = value;
-  } else if (STACK_HAS_SUFFIX(TempMin_suffix)) {
-    data_ptr[baseListIdx].TempMin = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(TempMax_suffix)) {
-    data_ptr[baseListIdx].TempMax = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RealFeelTempMin_suffix)) {
-    data_ptr[baseListIdx].RealFeelTempMin = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(RealFeelTempMax_suffix)) {
-    data_ptr[baseListIdx].RealFeelTempMax = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(HoursOfSun_suffix)) {
-    data_ptr[baseListIdx].HoursOfSun = value.toFloat();
-  } else if (STACK_HAS_SUFFIX(EpochDate_suffix)) {
-    data_ptr[baseListIdx].EpochDate = value.toInt();
-  } else if (STACK_HAS_SUFFIX(SunRise_suffix)) {
-    data_ptr[baseListIdx].SunRise = value.toInt();
-  } else if (STACK_HAS_SUFFIX(SunSet_suffix)) {
-    data_ptr[baseListIdx].SunSet = value.toInt();
-  } else if (STACK_HAS_SUFFIX(IconPhrase_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.IconPhrase = value;
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.IconPhrase = value;
-
-  } else if (STACK_HAS_SUFFIX(LongPhrase_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.LongPhrase = value;
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.LongPhrase = value;
-
-  } else if (STACK_HAS_SUFFIX(Ice_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.Ice = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.Ice = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(Rain_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.Rain = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.Rain = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(RelativeHumidity_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.RelativeHumidity = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.RelativeHumidity = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(Snow_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.Snow = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.Snow = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(TotalLiquid_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.TotalLiquid = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.TotalLiquid = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(Visibility_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.Visibility = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.Visibility = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(WindGustSpeed_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.WindGustSpeed = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.WindGustSpeed = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(WindSpeed_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.WindSpeed = value.toFloat();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.WindSpeed = value.toFloat();
-
-  } else if (STACK_HAS_SUFFIX(WindDirection_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.WindDirection = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.WindDirection = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(CloudCover_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.CloudCover = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.CloudCover = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(IceProbability_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.IceProbability = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.IceProbability = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(PrecipitationProbability_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.PrecipitationProbability = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.PrecipitationProbability = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(RainProbability_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.RainProbability = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.RainProbability = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(SnowProbability_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.SnowProbability = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.SnowProbability = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(ThunderstormProbability_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.ThunderstormProbability = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.ThunderstormProbability = value.toInt();
-
-  } else if (STACK_HAS_SUFFIX(Icon_suffix)) {
-    if (stackContains(ACCUPARSERDay))
-      data_ptr[baseListIdx].Day.WeatherIcon = value.toInt();
-    else if (stackContains(ACCUPARSERNight))
-      data_ptr[baseListIdx].Night.WeatherIcon = value.toInt();
+  } else if (STACK_HAS_SUFFIX(daily_date_epoch_suffix)) {
+    data_ptr[baseListIdx].DateEpoch = value.toInt();
+  } else if (STACK_HAS_SUFFIX(daily_maxtemp_c_suffix)) {
+    data_ptr[baseListIdx].Day.MaxTemp = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(daily_mintemp_c_suffix)) {
+    data_ptr[baseListIdx].Day.MinTemp = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(daily_maxwind_kph_suffix)) {
+    data_ptr[baseListIdx].Day.MaxWindKph = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(daily_totalprecip_mm_suffix)) {
+    data_ptr[baseListIdx].Day.TotalPrecipMm = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(daily_avgvis_km_suffix)) {
+    data_ptr[baseListIdx].Day.AvgVisKm = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(daily_avghumidity_suffix)) {
+    data_ptr[baseListIdx].Day.AvgHumidity = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(daily_chance_of_rain_suffix)) {
+    data_ptr[baseListIdx].Day.ChanceOfRain = value.toInt();
+  } else if (STACK_HAS_SUFFIX(daily_condition_text_suffix)) {
+    data_ptr[baseListIdx].Day.WeatherText = value;
+  } else if (STACK_HAS_SUFFIX(daily_condition_code_suffix)) {
+    data_ptr[baseListIdx].Day.WeatherCode = value.toInt();
   }
 
   popAllKeys();
 }
 
 /*
- *  Data retrieval over HTTP
+ * Data retrieval over HTTP
  */
-static const char currentURLTemplate[] PROGMEM = "http://api.weatherapi.com/v1/forecast.json?key=%s&q=id:%d&days=1&aqi=no&alerts=no";
+static const char forecastURLTemplate[] PROGMEM = "http://api.weatherapi.com/v1/forecast.json?key=%s&q=id:%d&days=1&aqi=no&alerts=no";
 int WeatherApi::getForecast(WeatherApiCurrentData* data_ptr) {
   char url[256];
-  snprintf_P(url, 256, currentURLTemplate, apiKey, locationID);
+  snprintf_P(url, 256, forecastURLTemplate, apiKey, locationID);
+
   http.begin(client, url);
   int httpCode = http.GET();
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK) {
       length = http.getSize();
       parser.reset();
-      listener = new AccuweatherCurrentParser(data_ptr);
+      // Use the new parser for current weather
+      listener = new CurrentParser(data_ptr);
       parser.setListener(listener);
       return 0;
     }
   }
-  //If we got here, we failed to get data
+  // If we got here, we failed to get data
   http.end();
   return httpCode;
 }
@@ -524,42 +389,35 @@ int WeatherApi::getForecast(WeatherApiCurrentData* data_ptr) {
 void WeatherApi::freeConnection() {
   http.end();
   delete listener;
+  listener = NULL;
 }
 
 /*
- *  continueDownload() function downloads data in 128 byte chunks.
- *  Returns <0 on download error, 0 on download finished, >0 if the download can be continued.
- *  This function should be called repeatedly until the returned value is 0.
- *  The function will close the connection and free resources automatically.
+ * continueDownload() function downloads data in 128 byte chunks.
+ * Returns <0 on download error, 0 on download finished, >0 if the download can be continued.
  */
 int WeatherApi::continueDownload() {
-  // read all data from server
   if (http.connected() && (length > 0 || length == -1)) {
-    // create buffer for read
     uint8_t buff[128] = { 0 };
-
-    // get tcp stream
     WiFiClient* stream = http.getStreamPtr();
-
-    // get available data size
     size_t size = stream->available();
-    int c = size;
-    if (size) {
-      // read up to 128 byte
-      c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
 
+    if (size) {
+      int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
       for (int i = 0; i < c; i++) {
         parser.parse(buff[i]);
       }
       if (length > 0) {
         length -= c;
       }
+      return c;  // Return bytes read
     }
-    return c + 1;
+    return 1;  // No data available right now, but connection is open
   } else if (length == 0) {
     freeConnection();
-    return 0;
+    return 0;  // Finished
   } else {
-    return -1;
+    freeConnection();  // Free resources on error
+    return -1;         // Error
   }
 }

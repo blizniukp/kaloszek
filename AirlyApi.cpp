@@ -8,7 +8,7 @@
 #include "AirlyApi.h"
 #define HTTP_DATA_CHUNK (128)
 
-AirlyApi::AirlyApi(const char* apiKey, const char* lat, const char* lng, int distance)  {
+AirlyApi::AirlyApi(const char* apiKey, const char* lat, const char* lng, int distance) {
   _apiKey = apiKey;
   _lat = lat;
   _lng = lng;
@@ -36,8 +36,7 @@ bool AirlyApi::doUpdate(String url) {
   Serial.println(full_url);
 #endif
 
-  if (!http.begin(client, String(AILRLY_API_ADDRESS + url)))
-  {
+  if (!http.begin(client, String(AILRLY_API_ADDRESS + url))) {
 #ifdef USE_SERIAL_PORT
     Serial.println("AirlyApi: http.begin error");
 #endif
@@ -54,7 +53,7 @@ bool AirlyApi::doUpdate(String url) {
       int len = http.getSize();
 
       char char_buff[HTTP_DATA_CHUNK];
-      WiFiClient * stream = http.getStreamPtr();
+      WiFiClient* stream = http.getStreamPtr();
 
       while (http.connected() && (len > 0 || len == -1)) {
         size_t size = stream->available();
@@ -72,8 +71,7 @@ bool AirlyApi::doUpdate(String url) {
       else
         result = true;
     }
-  } else
-  {
+  } else {
 #ifdef USE_SERIAL_PORT
     Serial.printf("AirlyApi: GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
 #endif
