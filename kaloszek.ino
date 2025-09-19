@@ -12,13 +12,9 @@
 #define USE_EPD 1
 #define USE_WIFI 1
 
-#define USE_WEATHERAPI 1
 #define USE_HOURLY_FORCAST 1
-
 #define USE_WIFI_ICO 1
-
 #define PRINT_WEATHER 1
-
 #define USE_MAX17048 1
 //#define USE_AIRLY 1
 
@@ -99,7 +95,6 @@ int wifi_connect() {
 }
 
 int get_weather() {
-#ifdef USE_WEATHERAPI
   int timeStart = millis();
 
   int ret = aw.getForecast(&dataC);
@@ -123,18 +118,6 @@ int get_weather() {
   Serial.println(String(ESP.getFreeHeap()));
 
   return 0;
-#else  //fake data - epd test
-  dataC.WeatherText = "Mostly cloudy";
-  dataC.WeatherIcon = 7;
-  dataC.Temperature = -16.60;
-  dataC.RealFeelTemperature = 16.60;
-  dataC.RelativeHumidity = 77.00;
-  dataC.WindDirection = 115;
-  dataC.WindSpeed = 6.70;
-  dataC.UVIndex = 1;
-  dataC.Pressure = 1023.00;
-  return 0;
-#endif
 }
 
 void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, int y_pos_time) {
@@ -208,7 +191,7 @@ void display_weather(int wifi_connection_status, int w_status)
   if (w_status == 0) {
     display.setFont(&Open_Sans_Bold_56pt_Ext);
 
-    my_temp = round(dataC.Temperature * 10) / 10.0;
+    my_temp = round(dataC.Current.TempC * 10) / 10.0;
     display.setCursor(20, pos_y_1_line);
     display.print(my_temp, 1);
     display.print("*C");
@@ -216,29 +199,29 @@ void display_weather(int wifi_connection_status, int w_status)
     display.setFont(&Open_Sans_Bold_26pt_Ext);
     display.setCursor(20, pos_y_2_line);
 
-    //   int real_temp = (int)(round(dataC.RealFeelTemperature));
-    //  display.print(real_temp);
-    //  display.print("*C");
+    int real_temp = (int)(round(dataC.Current.FeelsLikeC));
+    display.print(real_temp);
+    display.print("*C");
 
     int info_icon_height = 25;
     show_info_icon(1, 2, pos_y_3_line - info_icon_height);
     display.setFont(&FreeSansBold12pt7b);
-    int pressure = int(round(dataC.Pressure));
+    int pressure = int(round(dataC.Current.PressureMb));
     display.setCursor(30, pos_y_3_line);
     display.print(pressure);
 
     show_info_icon(2, 90, pos_y_3_line - info_icon_height);
-    //  int humidity = int(round(dataC.RelativeHumidity));
+    int humidity = int(round(dataC.Current.Humidity));
     display.setCursor(120, pos_y_3_line);
-    //  display.print(humidity);
+    display.print(humidity);
 
     show_info_icon(3, 155, pos_y_3_line - info_icon_height);
-    int wind_speed = (int)(round(dataC.WindSpeed));
+    int wind_speed = (int)(round(dataC.Current.WindKph));
     display.setCursor(187, pos_y_3_line);
     display.print(wind_speed);
 
     show_info_icon(4, 240, pos_y_3_line - info_icon_height);
-    display_wind_dir(dataC.WindDirection, 268, pos_y_3_line - 30);
+    //display_wind_dir(dataC.WindDirection, 268, pos_y_3_line - 30);
 
     show_info_icon(5, 308, pos_y_3_line - info_icon_height);
     display.setCursor(345, pos_y_3_line);
@@ -246,11 +229,11 @@ void display_weather(int wifi_connection_status, int w_status)
 
     //   display_main_weather_icon(dataC.WeatherIcon, pos_x_big_ico, 4);
 
-    uint16_t pos_x_description = set_weather_description_offset(dataC.WeatherText);
+    //    uint16_t pos_x_description = set_weather_description_offset(dataC.WeatherText);
 
     display.setFont(&Roboto_Medium_18);
-    display.setCursor(pos_x_description, pos_y_w_line);
-    display.print(dataC.WeatherText);
+    //  display.setCursor(pos_x_description, pos_y_w_line);
+    // display.print(dataC.WeatherText);
 
     display.setFont(&FreeSansBold9pt7b);
     //    dataC.LocalObservationDateTime.toCharArray(new_date, 20);
@@ -491,25 +474,18 @@ void go_to_sleep(int seconds) {
 
 void print_actual_weather() {
   Serial.println("actual weather:");
-  Serial.println(dataC.location.Name);
-  //Serial.println(dataC.LocalObservationDateTime);
-  Serial.println(dataC.EpochTime);
-  Serial.println(dataC.WeatherText);
-  //Serial.println(dataC.WeatherIcon);
-  //Serial.println(dataC.IsDayTime);
-  Serial.println(dataC.Temperature);
-  //Serial.println(dataC.RealFeelTemperature);
-  //Serial.println(dataC.RealFeelTemperatureShade);
-  //Serial.println(dataC.RelativeHumidity);
-  Serial.println(dataC.WindDirection);
-  Serial.println(dataC.WindSpeed);
-  Serial.println(dataC.WindGustSpeed);
-  //Serial.println(dataC.UVIndex);
-  //Serial.println(dataC.UVIndexText);
-  Serial.println(dataC.Visibility);
-  Serial.println(dataC.CloudCover);
-  Serial.println(dataC.Pressure);
-  Serial.println(dataC.WindDirection);
+  Serial.print("    LastUpdatedEpoch: ");
+  Serial.println(dataC.Current.LastUpdatedEpoch);
+  Serial.print("    TempC: ");
+  Serial.println(dataC.Current.TempC);
+  Serial.print("    WindKph: ");
+  Serial.println(dataC.Current.WindKph);
+  Serial.print("    WindDegree: ");
+  Serial.println(dataC.Current.WindDegree);
+  Serial.print("    PressureMb: ");
+  Serial.println(dataC.Current.PressureMb);
+  Serial.print("    Humidity: ");
+  Serial.println(dataC.Current.Humidity);
 }
 void print_dataH() {
   for (int i = 0; i <= 3; i += 3) {

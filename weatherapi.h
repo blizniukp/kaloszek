@@ -9,29 +9,43 @@
 #include <vector>
 #include <map>
 
-// Structures for holding the received data
+// Structures for holding the received data (as defined by you)
 typedef struct {
-  String Name;
-} WeatherApiResponseLocation;
+  int16_t Code;
+} WeatherApiResponseCurrentCondition;
 
 typedef struct {
-  WeatherApiResponseLocation location;
-  String LocalTime;
-  String WeatherText;
-  float CloudCover;
-  float Pressure;
-  float FeelsLike;
-  float Humidity;
-  float Temperature;
-  float Visibility;
-  float UvIndex;
-  float WindGustSpeed;
-  float WindSpeed;
-  int EpochTime;
-  int16_t WindDirection;
-  uint16_t WeatherCode;
+  uint32_t LastUpdatedEpoch;
+  float TempC;
+  float WindKph;
+  int16_t WindDegree;
+  float PressureMb;
+  int8_t Humidity;
+  float FeelsLikeC;
+  WeatherApiResponseCurrentCondition Condition;
+} WeatherApiResponseCurrent;
+
+typedef struct {
+  float AvgTempC;
+  float MaxWindKph;
+} WeatherApiResponseForecastdayDay;
+
+typedef struct {
+  uint32_t DateEpoch;
+  WeatherApiResponseForecastdayDay day;
+} WeatherApiResponseForecastday;
+
+typedef struct {
+  // Note: The API returns an array for 'forecastday', we will parse the first element.
+  WeatherApiResponseForecastday Forecastday;
+} WeatherApiResponseForecast;
+
+typedef struct {
+  WeatherApiResponseCurrent Current;
+  WeatherApiResponseForecast Forecast;
 } WeatherApiCurrentData;
 
+// Unused in getForecast, but kept for potential future use
 typedef struct {
   String Time;
   String WeatherText;
@@ -75,7 +89,6 @@ enum ParserTokens_ {
   PARSERBase,
   PARSERList,
   PARSERObject,
-  // New tokens for WeatherAPI.com
   PARSERlocation,
   PARSERcurrent,
   PARSERforecast,
@@ -111,13 +124,11 @@ enum ParserTokens_ {
   PARSERtime,
   PARSERtime_epoch,
   PARSERchance_of_rain,
+  PARSERavgtemp_c,  // <-- Added missing token
 };
 
-// I do this to save memory - by default enums are ints, so to save a bit of memory I use chars instead.
-// WARNING: change this if you will need more than 256 tokens
 typedef uint8_t ParserToken;
 
-// The parser creates a stack while parsing the JSON response.
 class WeatherApiParser : public JsonListener {
 public:
   WeatherApiParser(int maxListLength_);
@@ -142,7 +153,6 @@ protected:
   bool listFull = false;
 };
 
-// Descendant classes for parsing particular types of responses
 class CurrentParser : public WeatherApiParser {
 public:
   CurrentParser(WeatherApiCurrentData* data_ptr_);
@@ -169,7 +179,6 @@ protected:
   WeatherApiDailyData* data_ptr;
 };
 
-// Main class for sending requests and parsing responses
 class WeatherApi {
 public:
   WiFiClient client;
@@ -185,11 +194,7 @@ public:
       apiKey(apiKey_) {
   }
 
-  // This function is now adapted to get current weather
   int getForecast(WeatherApiCurrentData* data_ptr);
-  // You would create similar functions for daily/hourly forecasts
-  // e.g. int getDailyForecast(WeatherApiDailyData* data_ptr, int days);
-
   int continueDownload();
   void freeConnection();
 };
