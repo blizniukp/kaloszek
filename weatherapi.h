@@ -28,17 +28,24 @@ typedef struct {
 } WeatherApiResponseCurrent;
 
 typedef struct {
-  float AvgTempC;
   float MaxWindKph;
+  float AvgTempC;
+  uint8_t DailyChanceOfRain;
+  uint8_t DailyChanceOfSnow;
 } WeatherApiResponseForecastdayDay;
+
+typedef struct {
+  float TempC;
+  WeatherApiResponseCurrentCondition Condition;
+} WeatherApiResponseForecastdayHour;
 
 typedef struct {
   uint32_t DateEpoch;
   WeatherApiResponseForecastdayDay day;
+  WeatherApiResponseForecastdayHour hour[24];
 } WeatherApiResponseForecastday;
 
 typedef struct {
-  // Note: The API returns an array for 'forecastday', we will parse the first element.
   WeatherApiResponseForecastday Forecastday;
 } WeatherApiResponseForecast;
 
@@ -124,6 +131,7 @@ enum ParserTokens_ {
   PARSERavgvis_km,
   PARSERavghumidity,
   PARSERdaily_chance_of_rain,
+  PARSERdaily_chance_of_snow,
   PARSERtime,
   PARSERtime_epoch,
   PARSERchance_of_rain,

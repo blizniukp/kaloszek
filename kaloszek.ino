@@ -59,8 +59,9 @@ int airly_status;
 MAX17048 pwr_mgmt;
 
 const uint16_t pos_x_big_ico = 260;
+const int location_id = 1988803;
 
-WeatherApi aw(weatherapi_key, 1988803);
+WeatherApi aw(weatherapi_key, location_id);
 #ifdef USE_AIRLY
 #include "AirlyApi.h"
 AirlyApi airlyApi(airly_key, airly_latitude, airly_longitude, distance);
@@ -225,7 +226,9 @@ void display_weather(int wifi_connection_status, int w_status)
 
     show_info_icon(5, 308, pos_y_3_line - info_icon_height);
     display.setCursor(345, pos_y_3_line);
-    //    display.print(((int)(dataH[1].RainProbability + dataH[2].RainProbability + dataH[3].RainProbability) / 3));
+    int chanseOfRainAndSnow = dataC.Forecast.Forecastday.day.DailyChanceOfRain + dataC.Forecast.Forecastday.day.DailyChanceOfSnow;
+    chanseOfRainAndSnow = chanseOfRainAndSnow > 100 ? 100 : chanseOfRainAndSnow;
+    display.print(chanseOfRainAndSnow);
 
     display_main_weather_icon(dataC.Current.Condition.Code, dataC.Current.IsDay, pos_x_big_ico, 4);
 

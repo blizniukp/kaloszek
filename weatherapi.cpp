@@ -40,6 +40,7 @@ static const std::map<const String, const ParserToken> stringToTokenMap = {
   { "avgvis_km", PARSERavgvis_km },
   { "avghumidity", PARSERavghumidity },
   { "daily_chance_of_rain", PARSERdaily_chance_of_rain },
+  { "daily_chance_of_snow", PARSERdaily_chance_of_snow },
   { "time", PARSERtime },
   { "time_epoch", PARSERtime_epoch },
   { "chance_of_rain", PARSERchance_of_rain },
@@ -59,6 +60,8 @@ static const ParserToken current_condition_text_suffix[] = { PARSERcurrent, PARS
 static const ParserToken forecast_date_epoch_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERdate_epoch };
 static const ParserToken forecast_day_avgtemp_c_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERday, PARSERObject, PARSERavgtemp_c };
 static const ParserToken forecast_day_maxwind_kph_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERday, PARSERObject, PARSERmaxwind_kph };
+static const ParserToken forecast_day_daily_chance_of_rain_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERday, PARSERObject, PARSERdaily_chance_of_rain };
+static const ParserToken forecast_day_daily_chance_of_snow_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERday, PARSERObject, PARSERdaily_chance_of_snow };
 
 static const ParserToken forecastdayList_suffix[] = { PARSERBase, PARSERObject, PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject };
 static const ParserToken hourList_suffix[] = { PARSERforecastday, PARSERList, PARSERObject, PARSERhour, PARSERList, PARSERObject };
@@ -159,7 +162,7 @@ CurrentParser::CurrentParser(WeatherApiCurrentData* data_ptr_)
 
 void CurrentParser::value(String value) {
   // Only parse values from 'current' or 'forecast' objects
-  if (!stackContains(PARSERcurrent) && !stackContains(PARSERforecast)) {
+  if (!stackContains(PARSERcurrent) && !stackContains(PARSERforecast) && !stackContains(PARSERforecastday)) {
     popAllKeys();
     return;
   }
@@ -169,7 +172,7 @@ void CurrentParser::value(String value) {
     data_ptr->Current.LastUpdatedEpoch = value.toInt();
   } else if (STACK_HAS_SUFFIX(current_temp_c_suffix)) {
     data_ptr->Current.TempC = value.toFloat();
-  }else if (STACK_HAS_SUFFIX(current_is_day_suffix)) {
+  } else if (STACK_HAS_SUFFIX(current_is_day_suffix)) {
     data_ptr->Current.IsDay = value.toInt();
   } else if (STACK_HAS_SUFFIX(current_condition_code_suffix)) {
     data_ptr->Current.Condition.Code = value.toInt();
@@ -191,6 +194,10 @@ void CurrentParser::value(String value) {
     data_ptr->Forecast.Forecastday.day.AvgTempC = value.toFloat();
   } else if (STACK_HAS_SUFFIX(forecast_day_maxwind_kph_suffix)) {
     data_ptr->Forecast.Forecastday.day.MaxWindKph = value.toFloat();
+  } else if (STACK_HAS_SUFFIX(forecast_day_daily_chance_of_rain_suffix)) {
+    data_ptr->Forecast.Forecastday.day.DailyChanceOfRain = value.toInt();
+  } else if (STACK_HAS_SUFFIX(forecast_day_daily_chance_of_snow_suffix)) {
+    data_ptr->Forecast.Forecastday.day.DailyChanceOfSnow = value.toInt();
   }
 
   popAllKeys();
