@@ -204,41 +204,6 @@ void CurrentParser::value(String value) {
 }
 
 /*
- * Other parsers (unchanged, for potential future use)
- */
-HourlyParser::HourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_)
-  : WeatherApiParser(maxListLength_) {
-  data_ptr = data_ptr_;
-}
-
-void HourlyParser::startObject() {
-  tokenStack.push_back(PARSERObject);
-  if (STACK_HAS_SUFFIX(hourList_suffix)) {
-    baseListIdx++;
-  }
-}
-
-void HourlyParser::value(String value) {
-  // Not implemented, requires a dedicated getHourlyForecast function
-}
-
-DailyParser::DailyParser(WeatherApiDailyData* data_ptr_, int maxListLength_)
-  : WeatherApiParser(maxListLength_) {
-  data_ptr = data_ptr_;
-}
-
-void DailyParser::startObject() {
-  tokenStack.push_back(PARSERObject);
-  if (STACK_HAS_SUFFIX(forecastdayList_suffix)) {
-    baseListIdx++;
-  }
-}
-
-void DailyParser::value(String value) {
-  // Not implemented, requires a dedicated getDailyForecast function
-}
-
-/*
  * Data retrieval over HTTP
  */
 static const char forecastURLTemplate[] PROGMEM = "http://api.weatherapi.com/v1/forecast.json?key=%s&q=id:%d&days=1&aqi=no&alerts=no";

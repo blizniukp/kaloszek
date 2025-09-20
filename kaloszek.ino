@@ -47,7 +47,6 @@ const char str_percent[] = "% ";
 const char str_kmh[] = "km/h";
 const char str_bat_error[] = "Battery error";
 
-WeatherApiHourlyData dataH[12];
 WeatherApiCurrentData dataC;
 
 int wifi_connection_status;
@@ -517,7 +516,7 @@ void print_dataH() {
     //Serial.println(dataH[i].Temperature);
     //Serial.println(dataH[i]->RealFeelTemperature);
     Serial.print("Wind speed: ");
-    Serial.println(dataH[i].WindSpeed);
+    //Serial.println(dataH[i].WindSpeed);
     //Serial.println(dataH[i]->WindDirection);
     //Serial.println(dataH[i]->WindGustSpeed);
     Serial.print("Hum: ");

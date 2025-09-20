@@ -54,44 +54,6 @@ typedef struct {
   WeatherApiResponseForecast Forecast;
 } WeatherApiCurrentData;
 
-// Unused in getForecast, but kept for potential future use
-typedef struct {
-  String Time;
-  String WeatherText;
-  float FeelsLike;
-  float Gust;
-  float Humidity;
-  float Precip;
-  float Pressure;
-  float Temp;
-  float UvIndex;
-  float Visibility;
-  float WindDir;
-  float WindSpeed;
-  int TimeEpoch;
-  uint16_t WeatherCode;
-  uint8_t ChanceOfRain;
-  uint8_t Cloud;
-} WeatherApiHourlyData;
-
-typedef struct {
-  String WeatherText;
-  float AvgHumidity;
-  float AvgVisKm;
-  float MaxTemp;
-  float MaxWindKph;
-  float MinTemp;
-  float TotalPrecipMm;
-  uint16_t WeatherCode;
-  uint8_t ChanceOfRain;
-} ForecastDayData;
-
-typedef struct {
-  String Date;
-  int DateEpoch;
-  ForecastDayData Day;
-} WeatherApiDailyData;
-
 // Tokens for different keys that can be found in the JSON responses
 enum ParserTokens_ {
   PARSERUnknown,
@@ -170,24 +132,6 @@ public:
   virtual void value(String value);
 protected:
   WeatherApiCurrentData* data_ptr;
-};
-
-class HourlyParser : public WeatherApiParser {
-public:
-  HourlyParser(WeatherApiHourlyData* data_ptr_, int maxListLength_);
-  virtual void startObject();
-  virtual void value(String value);
-protected:
-  WeatherApiHourlyData* data_ptr;
-};
-
-class DailyParser : public WeatherApiParser {
-public:
-  DailyParser(WeatherApiDailyData* data_ptr_, int maxListLength_);
-  virtual void startObject();
-  virtual void value(String value);
-protected:
-  WeatherApiDailyData* data_ptr;
 };
 
 class WeatherApi {
