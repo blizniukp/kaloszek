@@ -11,7 +11,8 @@
 
 // Structures for holding the received data (as defined by you)
 typedef struct {
-  int16_t Code;
+  uint16_t Code;
+  String Text;
 } WeatherApiResponseCurrentCondition;
 
 typedef struct {
@@ -22,6 +23,7 @@ typedef struct {
   float PressureMb;
   int8_t Humidity;
   float FeelsLikeC;
+  uint8_t IsDay;
   WeatherApiResponseCurrentCondition Condition;
 } WeatherApiResponseCurrent;
 
@@ -100,6 +102,7 @@ enum ParserTokens_ {
   PARSERlocaltime,
   PARSERlast_updated_epoch,
   PARSERtemp_c,
+  PARSERis_day,
   PARSERfeelslike_c,
   PARSERpressure_mb,
   PARSERprecip_mm,

@@ -17,6 +17,7 @@ static const std::map<const String, const ParserToken> stringToTokenMap = {
   { "condition", PARSERcondition },
   { "last_updated_epoch", PARSERlast_updated_epoch },
   { "temp_c", PARSERtemp_c },
+  { "is_day", PARSERis_day },
   { "feelslike_c", PARSERfeelslike_c },
   { "pressure_mb", PARSERpressure_mb },
   { "precip_mm", PARSERprecip_mm },
@@ -46,12 +47,14 @@ static const std::map<const String, const ParserToken> stringToTokenMap = {
 
 static const ParserToken current_last_updated_epoch_suffix[] = { PARSERcurrent, PARSERObject, PARSERlast_updated_epoch };
 static const ParserToken current_temp_c_suffix[] = { PARSERcurrent, PARSERObject, PARSERtemp_c };
+static const ParserToken current_is_day_suffix[] = { PARSERcurrent, PARSERObject, PARSERis_day };
 static const ParserToken current_wind_kph_suffix[] = { PARSERcurrent, PARSERObject, PARSERwind_kph };
 static const ParserToken current_wind_degree_suffix[] = { PARSERcurrent, PARSERObject, PARSERwind_degree };
 static const ParserToken current_pressure_mb_suffix[] = { PARSERcurrent, PARSERObject, PARSERpressure_mb };
 static const ParserToken current_humidity_suffix[] = { PARSERcurrent, PARSERObject, PARSERhumidity };
 static const ParserToken current_feelslike_c_suffix[] = { PARSERcurrent, PARSERObject, PARSERfeelslike_c };
 static const ParserToken current_condition_code_suffix[] = { PARSERcurrent, PARSERObject, PARSERcondition, PARSERObject, PARSERcode };
+static const ParserToken current_condition_text_suffix[] = { PARSERcurrent, PARSERObject, PARSERcondition, PARSERObject, PARSERtext };
 
 static const ParserToken forecast_date_epoch_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERdate_epoch };
 static const ParserToken forecast_day_avgtemp_c_suffix[] = { PARSERforecast, PARSERObject, PARSERforecastday, PARSERList, PARSERObject, PARSERday, PARSERObject, PARSERavgtemp_c };
@@ -166,8 +169,12 @@ void CurrentParser::value(String value) {
     data_ptr->Current.LastUpdatedEpoch = value.toInt();
   } else if (STACK_HAS_SUFFIX(current_temp_c_suffix)) {
     data_ptr->Current.TempC = value.toFloat();
+  }else if (STACK_HAS_SUFFIX(current_is_day_suffix)) {
+    data_ptr->Current.IsDay = value.toInt();
   } else if (STACK_HAS_SUFFIX(current_condition_code_suffix)) {
     data_ptr->Current.Condition.Code = value.toInt();
+  } else if (STACK_HAS_SUFFIX(current_condition_text_suffix)) {
+    data_ptr->Current.Condition.Text = value;
   } else if (STACK_HAS_SUFFIX(current_wind_kph_suffix)) {
     data_ptr->Current.WindKph = value.toFloat();
   } else if (STACK_HAS_SUFFIX(current_wind_degree_suffix)) {
@@ -178,9 +185,7 @@ void CurrentParser::value(String value) {
     data_ptr->Current.Humidity = value.toInt();
   } else if (STACK_HAS_SUFFIX(current_feelslike_c_suffix)) {
     data_ptr->Current.FeelsLikeC = value.toFloat();
-  }
-  // --- Forecast Data (first day) ---
-  else if (STACK_HAS_SUFFIX(forecast_date_epoch_suffix)) {
+  } else if (STACK_HAS_SUFFIX(forecast_date_epoch_suffix)) {
     data_ptr->Forecast.Forecastday.DateEpoch = value.toInt();
   } else if (STACK_HAS_SUFFIX(forecast_day_avgtemp_c_suffix)) {
     data_ptr->Forecast.Forecastday.day.AvgTempC = value.toFloat();

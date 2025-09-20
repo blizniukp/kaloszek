@@ -138,7 +138,7 @@ void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, i
   display.setCursor(x_pos_time, y_pos_time);
   display.print(new_data);
 
-  // display_hourly_weather_icon(dataH[idx].WeatherIcon, x_pos_time - 5, y_pos_temp - 85);
+  // display_hourly_weather_icon(dataH[idx].WeatherIcon, dataH[idx].IsDay, x_pos_time - 5, y_pos_temp - 85);
 }
 
 void display_wind_dir(int16_t direct, int x_pos, int y_pos) {
@@ -221,19 +221,19 @@ void display_weather(int wifi_connection_status, int w_status)
     display.print(wind_speed);
 
     show_info_icon(4, 240, pos_y_3_line - info_icon_height);
-    //display_wind_dir(dataC.WindDirection, 268, pos_y_3_line - 30);
+    display_wind_dir(dataC.Current.WindDegree, 268, pos_y_3_line - 30);
 
     show_info_icon(5, 308, pos_y_3_line - info_icon_height);
     display.setCursor(345, pos_y_3_line);
     //    display.print(((int)(dataH[1].RainProbability + dataH[2].RainProbability + dataH[3].RainProbability) / 3));
 
-    //   display_main_weather_icon(dataC.WeatherIcon, pos_x_big_ico, 4);
+    display_main_weather_icon(dataC.Current.Condition.Code, dataC.Current.IsDay, pos_x_big_ico, 4);
 
-    //    uint16_t pos_x_description = set_weather_description_offset(dataC.WeatherText);
+    uint16_t pos_x_description = set_weather_description_offset(dataC.Current.Condition.Text);
 
     display.setFont(&Roboto_Medium_18);
-    //  display.setCursor(pos_x_description, pos_y_w_line);
-    // display.print(dataC.WeatherText);
+    display.setCursor(pos_x_description, pos_y_w_line);
+    display.print(dataC.Current.Condition.Text);
 
     display.setFont(&FreeSansBold9pt7b);
     //    dataC.LocalObservationDateTime.toCharArray(new_date, 20);
@@ -314,110 +314,118 @@ void set_icon_offset(uint8_t w_number, int *x_pos, int *y_pos) {
 #endif
 }
 
-void display_hourly_weather_icon(uint8_t w_number, int x_pos, int y_pos) {
+void display_hourly_weather_icon(uint16_t w_number, uint8_t is_day, int x_pos, int y_pos) {
   int size_w = 50;
   int size_h = 50;
 
   set_icon_offset(w_number, &x_pos, &y_pos);
 
   switch (w_number) {
-    case 1: display.drawBitmap(x_pos, y_pos, weatherIco1, size_w, size_h, GxEPD_BLACK); break;
-    case 2: display.drawBitmap(x_pos, y_pos, weatherIco2, size_w, size_h, GxEPD_BLACK); break;
-    case 3: display.drawBitmap(x_pos, y_pos, weatherIco3, size_w, size_h, GxEPD_BLACK); break;
-    case 4: display.drawBitmap(x_pos, y_pos, weatherIco4, size_w, size_h, GxEPD_BLACK); break;
-    case 5: display.drawBitmap(x_pos, y_pos, weatherIco5, size_w, size_h, GxEPD_BLACK); break;
-    case 6: display.drawBitmap(x_pos, y_pos, weatherIco6, size_w, size_h, GxEPD_BLACK); break;
-    case 7: display.drawBitmap(x_pos, y_pos, weatherIco7, size_w, size_h, GxEPD_BLACK); break;
-    case 8: display.drawBitmap(x_pos, y_pos, weatherIco8, size_w, size_h, GxEPD_BLACK); break;
-
-    case 11: display.drawBitmap(x_pos, y_pos, weatherIco11, size_w, size_h, GxEPD_BLACK); break;
-    case 12: display.drawBitmap(x_pos, y_pos, weatherIco12, size_w, size_h, GxEPD_BLACK); break;
-    case 13: display.drawBitmap(x_pos, y_pos, weatherIco13, size_w, size_h, GxEPD_BLACK); break;
-    case 14: display.drawBitmap(x_pos, y_pos, weatherIco14, size_w, size_h, GxEPD_BLACK); break;
-    case 15: display.drawBitmap(x_pos, y_pos, weatherIco15, size_w, size_h, GxEPD_BLACK); break;
-    case 16: display.drawBitmap(x_pos, y_pos, weatherIco16, size_w, size_h, GxEPD_BLACK); break;
-    case 17: display.drawBitmap(x_pos, y_pos, weatherIco17, size_w, size_h, GxEPD_BLACK); break;
-    case 18: display.drawBitmap(x_pos, y_pos, weatherIco18, size_w, size_h, GxEPD_BLACK); break;
-    case 19: display.drawBitmap(x_pos, y_pos, weatherIco19, size_w, size_h, GxEPD_BLACK); break;
-
-    case 20: display.drawBitmap(x_pos, y_pos, weatherIco20, size_w, size_h, GxEPD_BLACK); break;
-    case 21: display.drawBitmap(x_pos, y_pos, weatherIco21, size_w, size_h, GxEPD_BLACK); break;
-    case 22: display.drawBitmap(x_pos, y_pos, weatherIco22, size_w, size_h, GxEPD_BLACK); break;
-    case 23: display.drawBitmap(x_pos, y_pos, weatherIco23, size_w, size_h, GxEPD_BLACK); break;
-    case 24: display.drawBitmap(x_pos, y_pos, weatherIco24, size_w, size_h, GxEPD_BLACK); break;
-    case 25: display.drawBitmap(x_pos, y_pos, weatherIco25, size_w, size_h, GxEPD_BLACK); break;
-    case 26: display.drawBitmap(x_pos, y_pos, weatherIco26, size_w, size_h, GxEPD_BLACK); break;
-    case 29: display.drawBitmap(x_pos, y_pos, weatherIco29, size_w, size_h, GxEPD_BLACK); break;
-
-    case 30: display.drawBitmap(x_pos, y_pos, weatherIco30, size_w, size_h, GxEPD_BLACK); break;
-    case 31: display.drawBitmap(x_pos, y_pos, weatherIco31, size_w, size_h, GxEPD_BLACK); break;
-    case 32: display.drawBitmap(x_pos, y_pos, weatherIco32, size_w, size_h, GxEPD_BLACK); break;
-    case 33: display.drawBitmap(x_pos, y_pos, weatherIco33, size_w, size_h, GxEPD_BLACK); break;
-    case 34: display.drawBitmap(x_pos, y_pos, weatherIco34, size_w, size_h, GxEPD_BLACK); break;
-    case 35: display.drawBitmap(x_pos, y_pos, weatherIco35, size_w, size_h, GxEPD_BLACK); break;
-    case 36: display.drawBitmap(x_pos, y_pos, weatherIco36, size_w, size_h, GxEPD_BLACK); break;
-    case 37: display.drawBitmap(x_pos, y_pos, weatherIco37, size_w, size_h, GxEPD_BLACK); break;
-    case 38: display.drawBitmap(x_pos, y_pos, weatherIco38, size_w, size_h, GxEPD_BLACK); break;
-    case 39: display.drawBitmap(x_pos, y_pos, weatherIco39, size_w, size_h, GxEPD_BLACK); break;
-
-    case 40: display.drawBitmap(x_pos, y_pos, weatherIco40, size_w, size_h, GxEPD_BLACK); break;
-    case 41: display.drawBitmap(x_pos, y_pos, weatherIco41, size_w, size_h, GxEPD_BLACK); break;
-    case 42: display.drawBitmap(x_pos, y_pos, weatherIco42, size_w, size_h, GxEPD_BLACK); break;
-    case 43: display.drawBitmap(x_pos, y_pos, weatherIco43, size_w, size_h, GxEPD_BLACK); break;
-    case 44: display.drawBitmap(x_pos, y_pos, weatherIco44, size_w, size_h, GxEPD_BLACK); break;
+    case 1000: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco1 : weatherIco33), size_w, size_h, GxEPD_BLACK); break;
+    case 1003: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco2 : weatherIco34), size_w, size_h, GxEPD_BLACK); break;
+    case 1006: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco3 : weatherIco38), size_w, size_h, GxEPD_BLACK); break;
+    case 1009: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco7 : weatherIco7), size_w, size_h, GxEPD_BLACK); break;
+    case 1030: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco11 : weatherIco37), size_w, size_h, GxEPD_BLACK); break;
+    case 1063: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco14 : weatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1066: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco20 : weatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1069: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco29 : weatherIco29), size_w, size_h, GxEPD_BLACK); break;
+    case 1072: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco26 : weatherIco26), size_w, size_h, GxEPD_BLACK); break;
+    case 1087: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco17 : weatherIco41), size_w, size_h, GxEPD_BLACK); break;
+    case 1114: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco19 : weatherIco19), size_w, size_h, GxEPD_BLACK); break;
+    case 1117: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco22 : weatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1135: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco11 : weatherIco11), size_w, size_h, GxEPD_BLACK); break;
+    case 1147: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco11 : weatherIco11), size_w, size_h, GxEPD_BLACK); break;
+    case 1150: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1153: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1168: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1171: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1180: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco14 : weatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1183: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1186: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco13 : weatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1189: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1192: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco13 : weatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1195: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco18 : weatherIco18), size_w, size_h, GxEPD_BLACK); break;
+    case 1198: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1201: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco18 : weatherIco18), size_w, size_h, GxEPD_BLACK); break;
+    case 1204: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco12 : weatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1207: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco18 : weatherIco18), size_w, size_h, GxEPD_BLACK); break;
+    case 1210: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco20 : weatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1213: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco20 : weatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1216: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco19 : weatherIco19), size_w, size_h, GxEPD_BLACK); break;
+    case 1219: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco19 : weatherIco19), size_w, size_h, GxEPD_BLACK); break;
+    case 1222: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco22 : weatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1225: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco22 : weatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1237: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco22 : weatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1240: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco14 : weatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1243: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco13 : weatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1246: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco13 : weatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1249: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco29 : weatherIco29), size_w, size_h, GxEPD_BLACK); break;
+    case 1252: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco29 : weatherIco29), size_w, size_h, GxEPD_BLACK); break;
+    case 1255: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco20 : weatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1258: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco23 : weatherIco44), size_w, size_h, GxEPD_BLACK); break;
+    case 1261: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco20 : weatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1264: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco23 : weatherIco44), size_w, size_h, GxEPD_BLACK); break;
+    case 1273: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco17 : weatherIco41), size_w, size_h, GxEPD_BLACK); break;
+    case 1276: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco13 : weatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1279: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco14 : weatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1282: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? weatherIco13 : weatherIco40), size_w, size_h, GxEPD_BLACK); break;
   }
 }
-void display_main_weather_icon(uint8_t w_number, int x_pos, int y_pos) {
+void display_main_weather_icon(uint16_t w_number, uint8_t is_day, int x_pos, int y_pos) {
   int size_w = 100;
   int size_h = 100;
 
   set_icon_offset(w_number, &x_pos, &y_pos);
 
   switch (w_number) {
-    case 1: display.drawBitmap(x_pos, y_pos, bigWeatherIco1, size_w, size_h, GxEPD_BLACK); break;
-    case 2: display.drawBitmap(x_pos, y_pos, bigWeatherIco2, size_w, size_h, GxEPD_BLACK); break;
-    case 3: display.drawBitmap(x_pos, y_pos, bigWeatherIco3, size_w, size_h, GxEPD_BLACK); break;
-    case 4: display.drawBitmap(x_pos, y_pos, bigWeatherIco4, size_w, size_h, GxEPD_BLACK); break;
-    case 5: display.drawBitmap(x_pos, y_pos, bigWeatherIco5, size_w, size_h, GxEPD_BLACK); break;
-    case 6: display.drawBitmap(x_pos, y_pos, bigWeatherIco6, size_w, size_h, GxEPD_BLACK); break;
-    case 7: display.drawBitmap(x_pos, y_pos, bigWeatherIco7, size_w, size_h, GxEPD_BLACK); break;
-    case 8: display.drawBitmap(x_pos, y_pos, bigWeatherIco8, size_w, size_h, GxEPD_BLACK); break;
-
-    case 11: display.drawBitmap(x_pos, y_pos, bigWeatherIco11, size_w, size_h, GxEPD_BLACK); break;
-    case 12: display.drawBitmap(x_pos, y_pos, bigWeatherIco12, size_w, size_h, GxEPD_BLACK); break;
-    case 13: display.drawBitmap(x_pos, y_pos, bigWeatherIco13, size_w, size_h, GxEPD_BLACK); break;
-    case 14: display.drawBitmap(x_pos, y_pos, bigWeatherIco14, size_w, size_h, GxEPD_BLACK); break;
-    case 15: display.drawBitmap(x_pos, y_pos, bigWeatherIco15, size_w, size_h, GxEPD_BLACK); break;
-    case 16: display.drawBitmap(x_pos, y_pos, bigWeatherIco16, size_w, size_h, GxEPD_BLACK); break;
-    case 17: display.drawBitmap(x_pos, y_pos, bigWeatherIco17, size_w, size_h, GxEPD_BLACK); break;
-    case 18: display.drawBitmap(x_pos, y_pos, bigWeatherIco18, size_w, size_h, GxEPD_BLACK); break;
-    case 19: display.drawBitmap(x_pos, y_pos, bigWeatherIco19, size_w, size_h, GxEPD_BLACK); break;
-
-    case 20: display.drawBitmap(x_pos, y_pos, bigWeatherIco20, size_w, size_h, GxEPD_BLACK); break;
-    case 21: display.drawBitmap(x_pos, y_pos, bigWeatherIco21, size_w, size_h, GxEPD_BLACK); break;
-    case 22: display.drawBitmap(x_pos, y_pos, bigWeatherIco22, size_w, size_h, GxEPD_BLACK); break;
-    case 23: display.drawBitmap(x_pos, y_pos, bigWeatherIco23, size_w, size_h, GxEPD_BLACK); break;
-    case 24: display.drawBitmap(x_pos, y_pos, bigWeatherIco24, size_w, size_h, GxEPD_BLACK); break;
-    case 25: display.drawBitmap(x_pos, y_pos, bigWeatherIco25, size_w, size_h, GxEPD_BLACK); break;
-    case 26: display.drawBitmap(x_pos, y_pos, bigWeatherIco26, size_w, size_h, GxEPD_BLACK); break;
-    case 29: display.drawBitmap(x_pos, y_pos, bigWeatherIco29, size_w, size_h, GxEPD_BLACK); break;
-
-    case 30: display.drawBitmap(x_pos, y_pos, bigWeatherIco30, size_w, size_h, GxEPD_BLACK); break;
-    case 31: display.drawBitmap(x_pos, y_pos, bigWeatherIco31, size_w, size_h, GxEPD_BLACK); break;
-    case 32: display.drawBitmap(x_pos, y_pos, bigWeatherIco32, size_w, size_h, GxEPD_BLACK); break;
-    case 33: display.drawBitmap(x_pos, y_pos, bigWeatherIco33, size_w, size_h, GxEPD_BLACK); break;
-    case 34: display.drawBitmap(x_pos, y_pos, bigWeatherIco34, size_w, size_h, GxEPD_BLACK); break;
-    case 35: display.drawBitmap(x_pos, y_pos, bigWeatherIco35, size_w, size_h, GxEPD_BLACK); break;
-    case 36: display.drawBitmap(x_pos, y_pos, bigWeatherIco36, size_w, size_h, GxEPD_BLACK); break;
-    case 37: display.drawBitmap(x_pos, y_pos, bigWeatherIco37, size_w, size_h, GxEPD_BLACK); break;
-    case 38: display.drawBitmap(x_pos, y_pos, bigWeatherIco38, size_w, size_h, GxEPD_BLACK); break;
-    case 39: display.drawBitmap(x_pos, y_pos, bigWeatherIco39, size_w, size_h, GxEPD_BLACK); break;
-
-    case 40: display.drawBitmap(x_pos, y_pos, bigWeatherIco40, size_w, size_h, GxEPD_BLACK); break;
-    case 41: display.drawBitmap(x_pos, y_pos, bigWeatherIco41, size_w, size_h, GxEPD_BLACK); break;
-    case 42: display.drawBitmap(x_pos, y_pos, bigWeatherIco42, size_w, size_h, GxEPD_BLACK); break;
-    case 43: display.drawBitmap(x_pos, y_pos, bigWeatherIco43, size_w, size_h, GxEPD_BLACK); break;
-    case 44: display.drawBitmap(x_pos, y_pos, bigWeatherIco44, size_w, size_h, GxEPD_BLACK); break;
+    case 1000: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco1 : bigWeatherIco33), size_w, size_h, GxEPD_BLACK); break;
+    case 1003: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco2 : bigWeatherIco34), size_w, size_h, GxEPD_BLACK); break;
+    case 1006: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco3 : bigWeatherIco38), size_w, size_h, GxEPD_BLACK); break;
+    case 1009: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco7 : bigWeatherIco7), size_w, size_h, GxEPD_BLACK); break;
+    case 1030: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco11 : bigWeatherIco37), size_w, size_h, GxEPD_BLACK); break;
+    case 1063: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco14 : bigWeatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1066: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco20 : bigWeatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1069: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco29 : bigWeatherIco29), size_w, size_h, GxEPD_BLACK); break;
+    case 1072: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco26 : bigWeatherIco26), size_w, size_h, GxEPD_BLACK); break;
+    case 1087: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco17 : bigWeatherIco41), size_w, size_h, GxEPD_BLACK); break;
+    case 1114: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco19 : bigWeatherIco19), size_w, size_h, GxEPD_BLACK); break;
+    case 1117: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco22 : bigWeatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1135: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco11 : bigWeatherIco11), size_w, size_h, GxEPD_BLACK); break;
+    case 1147: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco11 : bigWeatherIco11), size_w, size_h, GxEPD_BLACK); break;
+    case 1150: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1153: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1168: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1171: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1180: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco14 : bigWeatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1183: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1186: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco13 : bigWeatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1189: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1192: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco13 : bigWeatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1195: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco18 : bigWeatherIco18), size_w, size_h, GxEPD_BLACK); break;
+    case 1198: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1201: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco18 : bigWeatherIco18), size_w, size_h, GxEPD_BLACK); break;
+    case 1204: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco12 : bigWeatherIco12), size_w, size_h, GxEPD_BLACK); break;
+    case 1207: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco18 : bigWeatherIco18), size_w, size_h, GxEPD_BLACK); break;
+    case 1210: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco20 : bigWeatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1213: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco20 : bigWeatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1216: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco19 : bigWeatherIco19), size_w, size_h, GxEPD_BLACK); break;
+    case 1219: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco19 : bigWeatherIco19), size_w, size_h, GxEPD_BLACK); break;
+    case 1222: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco22 : bigWeatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1225: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco22 : bigWeatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1237: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco22 : bigWeatherIco22), size_w, size_h, GxEPD_BLACK); break;
+    case 1240: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco14 : bigWeatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1243: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco13 : bigWeatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1246: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco13 : bigWeatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1249: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco29 : bigWeatherIco29), size_w, size_h, GxEPD_BLACK); break;
+    case 1252: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco29 : bigWeatherIco29), size_w, size_h, GxEPD_BLACK); break;
+    case 1255: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco20 : bigWeatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1258: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco23 : bigWeatherIco44), size_w, size_h, GxEPD_BLACK); break;
+    case 1261: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco20 : bigWeatherIco43), size_w, size_h, GxEPD_BLACK); break;
+    case 1264: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco23 : bigWeatherIco44), size_w, size_h, GxEPD_BLACK); break;
+    case 1273: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco17 : bigWeatherIco41), size_w, size_h, GxEPD_BLACK); break;
+    case 1276: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco13 : bigWeatherIco40), size_w, size_h, GxEPD_BLACK); break;
+    case 1279: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco14 : bigWeatherIco39), size_w, size_h, GxEPD_BLACK); break;
+    case 1282: display.drawBitmap(x_pos, y_pos, (is_day == 1 ? bigWeatherIco13 : bigWeatherIco40), size_w, size_h, GxEPD_BLACK); break;
   }
 }
 
@@ -486,14 +494,20 @@ void print_actual_weather() {
   Serial.println(dataC.Current.PressureMb);
   Serial.print("    Humidity: ");
   Serial.println(dataC.Current.Humidity);
+  Serial.print("    IsDay: ");
+  Serial.println(dataC.Current.IsDay);
+  Serial.print("    Code: ");
+  Serial.println(dataC.Current.Condition.Code);
+  Serial.print("    Text: ");
+  Serial.println(dataC.Current.Condition.Text);
 }
 void print_dataH() {
   for (int i = 0; i <= 3; i += 3) {
-    Serial.print("Czas: ");
+    Serial.print("Time: ");
     //Serial.println(dataH[i].DateTime);
     //Serial.println(dataH[i]->EpochDateTime);
     //Serial.println(dataH[i]->WeatherIcon);
-    Serial.print("Pogoda: ");
+    Serial.print("Weather: ");
     //Serial.println(dataH[i].IconPhrase);
     //Serial.println(dataH[i]->IsDaylight);
     Serial.print("Temp: ");
