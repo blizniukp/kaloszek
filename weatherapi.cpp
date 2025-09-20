@@ -59,6 +59,7 @@ static const ParserToken current_wind_degree_suffix[] = { PARSERcurrent, PARSERO
 static const ParserToken current_pressure_mb_suffix[] = { PARSERcurrent, PARSERObject, PARSERpressure_mb };
 static const ParserToken current_humidity_suffix[] = { PARSERcurrent, PARSERObject, PARSERhumidity };
 static const ParserToken current_feelslike_c_suffix[] = { PARSERcurrent, PARSERObject, PARSERfeelslike_c };
+static const ParserToken current_uv_suffix[] = { PARSERcurrent, PARSERObject, PARSERuv };
 static const ParserToken current_condition_code_suffix[] = { PARSERcurrent, PARSERObject, PARSERcondition, PARSERObject, PARSERcode };
 static const ParserToken current_condition_text_suffix[] = { PARSERcurrent, PARSERObject, PARSERcondition, PARSERObject, PARSERtext };
 
@@ -72,6 +73,7 @@ static const ParserToken forecast_day_daily_chance_of_snow_suffix[] = { PARSERda
 // FORECAST -> HOUR section
 static const ParserToken hour_temp_c_suffix[] = { PARSERObject, PARSERtemp_c };
 static const ParserToken hour_time_suffix[] = { PARSERObject, PARSERtime };
+static const ParserToken hour_time_epoch_suffix[] = { PARSERObject, PARSERtime_epoch };
 static const ParserToken hour_is_day_suffix[] = { PARSERObject, PARSERis_day };
 static const ParserToken hour_condition_text_suffix[] = { PARSERObject, PARSERcondition, PARSERObject, PARSERtext };
 static const ParserToken hour_condition_code_suffix[] = { PARSERObject, PARSERcondition, PARSERObject, PARSERcode };
@@ -234,35 +236,37 @@ void CurrentParser::value(String value) {
       data_ptr->Current.Humidity = value.toInt();
     } else if (STACK_HAS_SUFFIX(current_feelslike_c_suffix)) {
       data_ptr->Current.FeelsLikeC = value.toFloat();
+    } else if (STACK_HAS_SUFFIX(current_uv_suffix)) {
+      data_ptr->Current.UV = value.toFloat();
     }
   }
   // --- Forecast Data ---
   else if (stackContains(PARSERforecastday) && baseListIdx >= 0 && baseListIdx < WEATHERAPI_DAYS) {
     if (STACK_HAS_SUFFIX(forecast_date_epoch_suffix)) {
       data_ptr->Forecast.Forecastday[baseListIdx].DateEpoch = value.toInt();
-    }
-    else if (stackContains(PARSERday)) {
+    } else if (stackContains(PARSERday)) {
       if (STACK_HAS_SUFFIX(forecast_day_avgtemp_c_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].day.AvgTempC = value.toFloat();
+        data_ptr->Forecast.Forecastday[baseListIdx].Day.AvgTempC = value.toFloat();
       } else if (STACK_HAS_SUFFIX(forecast_day_maxwind_kph_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].day.MaxWindKph = value.toFloat();
+        data_ptr->Forecast.Forecastday[baseListIdx].Day.MaxWindKph = value.toFloat();
       } else if (STACK_HAS_SUFFIX(forecast_day_daily_chance_of_rain_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].day.DailyChanceOfRain = value.toInt();
+        data_ptr->Forecast.Forecastday[baseListIdx].Day.DailyChanceOfRain = value.toInt();
       } else if (STACK_HAS_SUFFIX(forecast_day_daily_chance_of_snow_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].day.DailyChanceOfSnow = value.toInt();
+        data_ptr->Forecast.Forecastday[baseListIdx].Day.DailyChanceOfSnow = value.toInt();
       }
-    }
-    else if (stackContains(PARSERhour) && hourListIdx >= 0 && hourListIdx < WEATHERAPI_HOURS) {
+    } else if (stackContains(PARSERhour) && hourListIdx >= 0 && hourListIdx < WEATHERAPI_HOURS) {
       if (STACK_HAS_SUFFIX(hour_temp_c_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].hour[hourListIdx].TempC = value.toFloat();
+        data_ptr->Forecast.Forecastday[baseListIdx].Hour[hourListIdx].TempC = value.toFloat();
       } else if (STACK_HAS_SUFFIX(hour_time_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].hour[hourListIdx].Time = value;
+        data_ptr->Forecast.Forecastday[baseListIdx].Hour[hourListIdx].Time = value;
+      } else if (STACK_HAS_SUFFIX(hour_time_epoch_suffix)) {
+        data_ptr->Forecast.Forecastday[baseListIdx].Hour[hourListIdx].TimeEpoch = value.toInt();
       } else if (STACK_HAS_SUFFIX(hour_condition_text_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].hour[hourListIdx].Condition.Text = value;
+        data_ptr->Forecast.Forecastday[baseListIdx].Hour[hourListIdx].Condition.Text = value;
       } else if (STACK_HAS_SUFFIX(hour_condition_code_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].hour[hourListIdx].Condition.Code = value.toInt();
+        data_ptr->Forecast.Forecastday[baseListIdx].Hour[hourListIdx].Condition.Code = value.toInt();
       } else if (STACK_HAS_SUFFIX(hour_is_day_suffix)) {
-        data_ptr->Forecast.Forecastday[baseListIdx].hour[hourListIdx].IsDay = value.toInt();
+        data_ptr->Forecast.Forecastday[baseListIdx].Hour[hourListIdx].IsDay = value.toInt();
       }
     }
   }

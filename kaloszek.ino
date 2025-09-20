@@ -120,8 +120,8 @@ int get_weather() {
   return 0;
 }
 
-void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, int y_pos_time) {
-  int my_temp = (int)(round(dataC.Forecast.Forecastday[0].hour[idx].TempC));
+void display_forecast(WeatherApiResponseForecastdayHour *f_data, int x_pos_temp, int y_pos_temp, int x_pos_time, int y_pos_time) {
+  int my_temp = (int)(round(f_data->TempC));
   char new_date[32];
   char new_data[8];
 
@@ -131,14 +131,13 @@ void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, i
   display.print("*C");
 
   display.setFont(&FreeSansBold9pt7b);
-  //  dataH[idx].DateTime.toCharArray(new_date, 20);
-  memmove(new_date, new_date + 11, 8);
-  memcpy(new_data, new_date, 5);
+  f_data->Time.toCharArray(new_date, 17);
+  memmove(new_data, new_date + 11, 5);
   new_data[5] = 0;
   display.setCursor(x_pos_time, y_pos_time);
   display.print(new_data);
 
-  // display_hourly_weather_icon(dataH[idx].WeatherIcon, dataH[idx].IsDay, x_pos_time - 5, y_pos_temp - 85);
+  display_hourly_weather_icon(f_data->Condition.Code, f_data->IsDay, x_pos_time - 5, y_pos_temp - 85);
 }
 
 void display_wind_dir(int16_t direct, int x_pos, int y_pos) {
@@ -163,8 +162,20 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos) {
     display.drawBitmap(x_pos, y_pos, winddir5, size_w, size_h, GxEPD_BLACK);
 }
 
-int get_hour_index(uint32_t current_epoch) {
-  return 0;
+WeatherApiResponseForecastdayHour *get_forecast(int hour) {
+  WeatherApiResponseForecastdayHour *f_data = &dataC.Forecast.Forecastday[0].Hour[0];
+
+  uint32_t forecast_time = dataC.Current.LastUpdatedEpoch + (hour * 3600);
+
+  for (int x = 0; x < WEATHERAPI_DAYS; x++) {
+    for (int i = 0; i < WEATHERAPI_HOURS; i++) {
+      f_data = &dataC.Forecast.Forecastday[x].Hour[i];
+      if (dataC.Forecast.Forecastday[x].Hour[i].TimeEpoch > forecast_time)
+        return f_data;
+    }
+  }
+
+  return f_data;
 }
 
 #ifdef USE_AIRLY
@@ -229,7 +240,7 @@ void display_weather(int wifi_connection_status, int w_status)
 
     show_info_icon(5, 308, pos_y_3_line - info_icon_height);
     display.setCursor(345, pos_y_3_line);
-    int chanseOfRainAndSnow = dataC.Forecast.Forecastday[0].day.DailyChanceOfRain + dataC.Forecast.Forecastday[0].day.DailyChanceOfSnow;
+    int chanseOfRainAndSnow = dataC.Forecast.Forecastday[0].Day.DailyChanceOfRain + dataC.Forecast.Forecastday[0].Day.DailyChanceOfSnow;
     chanseOfRainAndSnow = chanseOfRainAndSnow > 100 ? 100 : chanseOfRainAndSnow;
     display.print(chanseOfRainAndSnow);
 
@@ -244,26 +255,23 @@ void display_weather(int wifi_connection_status, int w_status)
     display.setFont(&FreeSansBold9pt7b);
 
     dataC.Location.LocalTime.toCharArray(new_date, 20);
-    memmove(new_date, new_date + 11, 5);
+    memmove(new_data, new_date + 11, 5);
     new_data[5] = 0;
     display.setCursor(335, pos_y_6_line);
     display.print(new_data);
 
-    /*
-    int hour_index = get_hour_index(dataC.Current.LastUpdatedEpoch);
+    WeatherApiResponseForecastdayHour *f_data = get_forecast(3);
+    display_forecast(f_data, 10, pos_y_4_line, 25, pos_y_5_line);  //3h
 
-    if (hour_index < MAX_HOUR_INDEX)
-      display_forecast(hour_index, 10, pos_y_4_line, 25, pos_y_5_line);  //3h
+    f_data = get_forecast(6);
+    display_forecast(f_data, 110, pos_y_4_line, 125, pos_y_5_line);  //6h
 
-    if (hour_index + 3 < MAX_HOUR_INDEX)
-      display_forecast(hour_index + 3, 110, pos_y_4_line, 125, pos_y_5_line);  //6h
+    f_data = get_forecast(9);
+    display_forecast(f_data, 210, pos_y_4_line, 225, pos_y_5_line);  //9h
 
-    if (hour_index + 6 < MAX_HOUR_INDEX)
-      display_forecast(hour_index + 6, 210, pos_y_4_line, 225, pos_y_5_line);  //9h
+    f_data = get_forecast(12);
+    display_forecast(f_data, 310, pos_y_4_line, 325, pos_y_5_line);  //12h
 
-    if (hour_index + 9 < MAX_HOUR_INDEX)
-      display_forecast(hour_index + 9, 310, pos_y_4_line, 325, pos_y_5_line);  //12h
-    */
   } else {
     display.setFont(&FreeSansBold9pt7b);
     display.setCursor(232, pos_y_6_line);
@@ -279,8 +287,8 @@ void display_weather(int wifi_connection_status, int w_status)
 
   display.drawBitmap(30, 281, infoSmallIco3, 19, 19, GxEPD_BLACK);
   display.setCursor(55, pos_y_6_line);
-  //int uv_index = (int)(round(dataC.UVIndex));
-  //display.print(uv_index);
+  int uv_index = (int)(round(dataC.Current.UV));
+  display.print(uv_index);
 
 #ifdef USE_AIRLY
   display.drawBitmap(80, 281, infoSmallIco4, 19, 19, GxEPD_BLACK);
@@ -527,16 +535,16 @@ void print_dataH() {
     Serial.println("-------------------------");
     for (int i = 0; i < (WEATHERAPI_HOURS / 2); i += 3) {
       Serial.print("Time: ");
-      Serial.println(dataC.Forecast.Forecastday[x].hour[i].Time);
+      Serial.println(dataC.Forecast.Forecastday[x].Hour[i].Time);
       Serial.print("Weather: ");
-      Serial.print(dataC.Forecast.Forecastday[x].hour[i].Condition.Text);
+      Serial.print(dataC.Forecast.Forecastday[x].Hour[i].Condition.Text);
       Serial.print(" (");
-      Serial.print(dataC.Forecast.Forecastday[x].hour[i].Condition.Code);
+      Serial.print(dataC.Forecast.Forecastday[x].Hour[i].Condition.Code);
       Serial.println(")");
       Serial.print("Temp: ");
-      Serial.println(dataC.Forecast.Forecastday[x].hour[i].TempC);
+      Serial.println(dataC.Forecast.Forecastday[x].Hour[i].TempC);
       Serial.print("IsDay: ");
-      Serial.println(dataC.Forecast.Forecastday[x].hour[i].IsDay);
+      Serial.println(dataC.Forecast.Forecastday[x].Hour[i].IsDay);
       Serial.println("  ");
     }
   }

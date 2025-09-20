@@ -31,6 +31,7 @@ typedef struct {
   int8_t Humidity;
   float FeelsLikeC;
   uint8_t IsDay;
+  float UV;
   WeatherApiResponseCurrentCondition Condition;
 } WeatherApiResponseCurrent;
 
@@ -42,6 +43,7 @@ typedef struct {
 } WeatherApiResponseForecastdayDay;
 
 typedef struct {
+  uint32_t TimeEpoch;
   float TempC;
   uint8_t IsDay;
   String Time;
@@ -50,8 +52,8 @@ typedef struct {
 
 typedef struct {
   uint32_t DateEpoch;
-  WeatherApiResponseForecastdayDay day;
-  WeatherApiResponseForecastdayHour hour[WEATHERAPI_HOURS];
+  WeatherApiResponseForecastdayDay Day;
+  WeatherApiResponseForecastdayHour Hour[WEATHERAPI_HOURS];
 } WeatherApiResponseForecastday;
 
 typedef struct {
