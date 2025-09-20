@@ -121,13 +121,13 @@ int get_weather() {
 }
 
 void display_forecast(int idx, int x_pos_temp, int y_pos_temp, int x_pos_time, int y_pos_time) {
-  // int my_temp = (int)(round(dataH[idx].Temperature));
+  int my_temp = (int)(round(dataC.Forecast.Forecastday[0].hour[idx].TempC));
   char new_date[32];
   char new_data[8];
 
   display.setFont(&Open_Sans_Bold_26pt_Ext);
   display.setCursor(x_pos_temp + 10, y_pos_temp);
-  //  display.print(my_temp);
+  display.print(my_temp);
   display.print("*C");
 
   display.setFont(&FreeSansBold9pt7b);
@@ -161,6 +161,10 @@ void display_wind_dir(int16_t direct, int x_pos, int y_pos) {
     display.drawBitmap(x_pos, y_pos, winddir6, size_w, size_h, GxEPD_BLACK);
   else if ((direct >= 338) || (direct < 23))  // ("N");
     display.drawBitmap(x_pos, y_pos, winddir5, size_w, size_h, GxEPD_BLACK);
+}
+
+int get_hour_index(uint32_t current_epoch) {
+  return 0;
 }
 
 #ifdef USE_AIRLY
@@ -225,7 +229,7 @@ void display_weather(int wifi_connection_status, int w_status)
 
     show_info_icon(5, 308, pos_y_3_line - info_icon_height);
     display.setCursor(345, pos_y_3_line);
-    int chanseOfRainAndSnow = dataC.Forecast.Forecastday.day.DailyChanceOfRain + dataC.Forecast.Forecastday.day.DailyChanceOfSnow;
+    int chanseOfRainAndSnow = dataC.Forecast.Forecastday[0].day.DailyChanceOfRain + dataC.Forecast.Forecastday[0].day.DailyChanceOfSnow;
     chanseOfRainAndSnow = chanseOfRainAndSnow > 100 ? 100 : chanseOfRainAndSnow;
     display.print(chanseOfRainAndSnow);
 
@@ -238,17 +242,28 @@ void display_weather(int wifi_connection_status, int w_status)
     display.print(dataC.Current.Condition.Text);
 
     display.setFont(&FreeSansBold9pt7b);
-    //    dataC.LocalObservationDateTime.toCharArray(new_date, 20);
-    //    memmove(new_date, new_date + 11, 8);
-    //    memcpy(new_data, new_date, 5);
+
+    dataC.Location.LocalTime.toCharArray(new_date, 20);
+    memmove(new_date, new_date + 11, 5);
     new_data[5] = 0;
     display.setCursor(335, pos_y_6_line);
     display.print(new_data);
 
-    display_forecast(2, 10, pos_y_4_line, 25, pos_y_5_line);     //3h
-    display_forecast(5, 110, pos_y_4_line, 125, pos_y_5_line);   //6h
-    display_forecast(8, 210, pos_y_4_line, 225, pos_y_5_line);   //9h
-    display_forecast(11, 310, pos_y_4_line, 325, pos_y_5_line);  //12h
+    /*
+    int hour_index = get_hour_index(dataC.Current.LastUpdatedEpoch);
+
+    if (hour_index < MAX_HOUR_INDEX)
+      display_forecast(hour_index, 10, pos_y_4_line, 25, pos_y_5_line);  //3h
+
+    if (hour_index + 3 < MAX_HOUR_INDEX)
+      display_forecast(hour_index + 3, 110, pos_y_4_line, 125, pos_y_5_line);  //6h
+
+    if (hour_index + 6 < MAX_HOUR_INDEX)
+      display_forecast(hour_index + 6, 210, pos_y_4_line, 225, pos_y_5_line);  //9h
+
+    if (hour_index + 9 < MAX_HOUR_INDEX)
+      display_forecast(hour_index + 9, 310, pos_y_4_line, 325, pos_y_5_line);  //12h
+    */
   } else {
     display.setFont(&FreeSansBold9pt7b);
     display.setCursor(232, pos_y_6_line);
@@ -483,6 +498,8 @@ void go_to_sleep(int seconds) {
 }
 
 void print_actual_weather() {
+  Serial.print("localtime: ");
+  Serial.println(dataC.Location.LocalTime);
   Serial.println("actual weather:");
   Serial.print("    LastUpdatedEpoch: ");
   Serial.println(dataC.Current.LastUpdatedEpoch);
@@ -502,42 +519,28 @@ void print_actual_weather() {
   Serial.println(dataC.Current.Condition.Code);
   Serial.print("    Text: ");
   Serial.println(dataC.Current.Condition.Text);
+  print_dataH();
 }
 void print_dataH() {
-  for (int i = 0; i <= 3; i += 3) {
-    Serial.print("Time: ");
-    //Serial.println(dataH[i].DateTime);
-    //Serial.println(dataH[i]->EpochDateTime);
-    //Serial.println(dataH[i]->WeatherIcon);
-    Serial.print("Weather: ");
-    //Serial.println(dataH[i].IconPhrase);
-    //Serial.println(dataH[i]->IsDaylight);
-    Serial.print("Temp: ");
-    //Serial.println(dataH[i].Temperature);
-    //Serial.println(dataH[i]->RealFeelTemperature);
-    Serial.print("Wind speed: ");
-    //Serial.println(dataH[i].WindSpeed);
-    //Serial.println(dataH[i]->WindDirection);
-    //Serial.println(dataH[i]->WindGustSpeed);
-    Serial.print("Hum: ");
-    //Serial.println(dataH[i].RelativeHumidity);
-    //Serial.println(dataH[i]->Visibility);
-    Serial.print("UV index: ");
-    //Serial.println(dataH[i].UVIndex);
-    //Serial.println(dataH[i]->UVIndexText);
-    //Serial.println(dataH[i]->PrecipitationProbability);
-    Serial.print("Rain prob: ");
-    //Serial.println(dataH[i].RainProbability);
-    //Serial.println(dataH[i]->SnowProbability);
-    //Serial.println(dataH[i]->IceProbability);
-    //Serial.println(dataH[i]->TotalLiquid);
-    //Serial.println(dataH[i]->Rain);
-    //Serial.println(dataH[i]->Snow);
-    //Serial.println(dataH[i]->Ice);
-    //Serial.println(dataH[i]->CloudCover);
-    Serial.println("  ");
-    Serial.println("  ");
+  Serial.println("==========================");
+  for (int x = 0; x < WEATHERAPI_DAYS; x++) {
+    Serial.println("-------------------------");
+    for (int i = 0; i < (WEATHERAPI_HOURS / 2); i += 3) {
+      Serial.print("Time: ");
+      Serial.println(dataC.Forecast.Forecastday[x].hour[i].Time);
+      Serial.print("Weather: ");
+      Serial.print(dataC.Forecast.Forecastday[x].hour[i].Condition.Text);
+      Serial.print(" (");
+      Serial.print(dataC.Forecast.Forecastday[x].hour[i].Condition.Code);
+      Serial.println(")");
+      Serial.print("Temp: ");
+      Serial.println(dataC.Forecast.Forecastday[x].hour[i].TempC);
+      Serial.print("IsDay: ");
+      Serial.println(dataC.Forecast.Forecastday[x].hour[i].IsDay);
+      Serial.println("  ");
+    }
   }
+  Serial.println("==========================");
 }
 #ifdef USE_AIRLY
 int checkNearestSensor() {

@@ -9,11 +9,18 @@
 #include <vector>
 #include <map>
 
-// Structures for holding the received data (as defined by you)
+#define WEATHERAPI_DAYS (2)
+#define WEATHERAPI_HOURS (24)
+
+// Structures for holding the received data
 typedef struct {
   uint16_t Code;
   String Text;
 } WeatherApiResponseCurrentCondition;
+
+typedef struct {
+  String LocalTime;
+} WeatherApiResponseLocation;
 
 typedef struct {
   uint32_t LastUpdatedEpoch;
@@ -36,20 +43,23 @@ typedef struct {
 
 typedef struct {
   float TempC;
+  uint8_t IsDay;
+  String Time;
   WeatherApiResponseCurrentCondition Condition;
 } WeatherApiResponseForecastdayHour;
 
 typedef struct {
   uint32_t DateEpoch;
   WeatherApiResponseForecastdayDay day;
-  WeatherApiResponseForecastdayHour hour[24];
+  WeatherApiResponseForecastdayHour hour[WEATHERAPI_HOURS];
 } WeatherApiResponseForecastday;
 
 typedef struct {
-  WeatherApiResponseForecastday Forecastday;
+  WeatherApiResponseForecastday Forecastday[WEATHERAPI_DAYS];
 } WeatherApiResponseForecast;
 
 typedef struct {
+  WeatherApiResponseLocation Location;
   WeatherApiResponseCurrent Current;
   WeatherApiResponseForecast Forecast;
 } WeatherApiCurrentData;
@@ -97,7 +107,7 @@ enum ParserTokens_ {
   PARSERtime,
   PARSERtime_epoch,
   PARSERchance_of_rain,
-  PARSERavgtemp_c,  // <-- Added missing token
+  PARSERavgtemp_c,
 };
 
 typedef uint8_t ParserToken;
@@ -130,8 +140,11 @@ class CurrentParser : public WeatherApiParser {
 public:
   CurrentParser(WeatherApiCurrentData* data_ptr_);
   virtual void value(String value);
+  virtual void startObject();
+  virtual void endArray();
 protected:
   WeatherApiCurrentData* data_ptr;
+  int hourListIdx = -1;
 };
 
 class WeatherApi {
