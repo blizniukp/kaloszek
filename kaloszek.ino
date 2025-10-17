@@ -4,10 +4,10 @@
 #include <WiFiClient.h>
 #include <GxEPD2_BW.h>
 #include <JsonListener.h>
+#include "LiFuelGauge.h"
 
 #include "weatherapi.h"
 #include "kaloszek_config.h"
-#include "MAX17048.h"
 
 #define USE_EPD 1
 #define USE_WIFI 1
@@ -15,7 +15,7 @@
 #define USE_HOURLY_FORCAST 1
 #define USE_WIFI_ICO 1
 #define PRINT_WEATHER 1
-#define USE_MAX17048 1
+#define USE_MAX17048 0
 //#define USE_AIRLY 1
 
 #define UPDATE_PERIOD 1800  //seconds
@@ -34,6 +34,7 @@
 #include "data/fonts/RobotoMedPlain18.h"
 
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=D8 ss*/ 15, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
+LiFuelGauge gauge(MAX17043);
 
 const char str_sleep[] = "I'm going to sleep for ";
 const char str_seconds[] = " seconds";
@@ -54,8 +55,6 @@ int weather_status;
 #ifdef USE_AIRLY
 int airly_status;
 #endif
-
-MAX17048 pwr_mgmt;
 
 const uint16_t pos_x_big_ico = 260;
 const int location_id = 1988803;
@@ -302,6 +301,10 @@ void display_weather(int wifi_connection_status, int w_status)
 #endif
   display_battery(pos_y_6_line);
 
+#ifdef USE_MAX17048
+  gauge.sleep();
+#endif
+
   display.display();
   display.powerOff();
   display.hibernate();
@@ -471,8 +474,11 @@ void display_battery(uint16_t pos_y) {
   display.setFont(&FreeSansBold9pt7b);
   display.setCursor(250, pos_y);
 
-  uint16_t percent = pwr_mgmt.percent();
-
+#ifdef USE_MAX17048
+  uint16_t percent = gauge.getSOC();
+#else
+  uint16_t percent = 0;
+#endif
   if ((percent > 100) && (percent < 250)) percent = 100;
 
   int pos_x_ico = 220;
@@ -591,12 +597,13 @@ void setup() {
 
 #ifdef USE_MAX17048
   Wire.begin(D1, D6);  //sda,scl
-  pwr_mgmt.attatch(Wire);
+  gauge.reset();
+  delay(200);
 
   Serial.print("VCELL V   : ");
-  Serial.println(pwr_mgmt.voltage());
+  Serial.println(gauge.getVoltage());
   Serial.print("VCELL SOC : ");
-  Serial.print(pwr_mgmt.percent());
+  Serial.print(gauge.getSOC());
   Serial.println(" \%");
 #endif
 
